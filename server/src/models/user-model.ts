@@ -1,18 +1,6 @@
-import { Schema, model } from "mongoose";
+import { Query, Schema, model } from "mongoose";
 import validator from "validator";
-
-interface IUser {
-    name: string;
-    email: string;
-    photo: string;
-    role: string;
-    password: string;
-    passwordConfirm: string;
-    passwordChangedAt: Date;
-    passwordResetToken: string;
-    passwordResetExpires: Date;
-    active: boolean;
-}
+import bcrypt from "bcryptjs";
 
 const userSchema = new Schema<IUser>({
     name: {
@@ -59,4 +47,31 @@ const userSchema = new Schema<IUser>({
     },
 });
 
-export const User = model("User", userSchema);
+userSchema.pre<Query<IUser, IUser>>(/^find/, function (next) {
+    // this points to the current query
+    this.find({ active: { $ne: false } });
+    next();
+});
+
+userSchema.methods.correctPassword = async function (
+    candidatePassword: string,
+    userPassword: string
+) {
+    return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp: number) {
+    if (this.passwordChangedAt) {
+        const changedTimestamp = parseInt(
+            (this.passwordChangedAt.getTime() / 1000).toString(),
+            10
+        );
+
+        return JWTTimestamp < changedTimestamp;
+    }
+
+    // False means NOT changed
+    return false;
+};
+
+export const User = model<IUser>("User", userSchema);
