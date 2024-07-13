@@ -1,3 +1,4 @@
+import { PERSONAL_CHAT_STATUS } from "@/utils/constants";
 import { Schema, model } from "mongoose";
 
 const personalChatSchema = new Schema(
@@ -14,11 +15,37 @@ const personalChatSchema = new Schema(
         },
         user1HasArchivedChat: {
             type: Boolean,
-            default: false,
         },
         user2HasArchivedChat: {
             type: Boolean,
-            default: false,
+        },
+        user1ChatStatus: {
+            type: String,
+            enum: [
+                PERSONAL_CHAT_STATUS.ACTIVE,
+                PERSONAL_CHAT_STATUS.BLOCKED,
+                PERSONAL_CHAT_STATUS.DELETED,
+            ],
+            default: PERSONAL_CHAT_STATUS.ACTIVE,
+        },
+        user2ChatStatus: {
+            type: String,
+            enum: [
+                PERSONAL_CHAT_STATUS.ACTIVE,
+                PERSONAL_CHAT_STATUS.BLOCKED,
+                PERSONAL_CHAT_STATUS.DELETED,
+            ],
+            default: PERSONAL_CHAT_STATUS.ACTIVE,
+        },
+
+        user1ChatStatusActiveTimestamp: {
+            type: Date,
+            default: Date.now,
+        },
+
+        user2ChatStatusActiveTimestamp: {
+            type: Date,
+            default: Date.now,
         },
     },
     {
