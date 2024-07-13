@@ -1,4 +1,5 @@
 import { PersonalChat } from "@/models/personal-chat-model";
+import { AppError } from "@/utils/app-error";
 import { catchAsync } from "@/utils/catch-async";
 import { RESPONSE_STATUS } from "@/utils/constants";
 
@@ -15,17 +16,44 @@ export const getAllMyPersonalChats = catchAsync(async (req, res) => {
     });
 });
 
-export const getPersonalChatByChatId = catchAsync(async (req, res) => {
+export const createPersonalChatByUserId = catchAsync(async (req, res, next) => {
+    const userId = req.user._id;
+    const { userId2 } = req.body;
+
+    if (!userId2) {
+        return next(new AppError("Another User is required", 400));
+    }
+
+    const personalChatExists = await PersonalChat.findOne({
+        $or: [
+            { user1: userId, user2: userId2 },
+            { user1: userId2, user2: userId },
+        ],
+    });
+
+    if (personalChatExists) {
+        return next(new AppError("Personal chat already exists", 400));
+    }
+
+    const personalChat = await PersonalChat.create({
+        user1: userId,
+        user2: userId2,
+    });
+
+    res.status(201).json({
+        status: RESPONSE_STATUS.SUCCESS,
+        data: personalChat,
+    });
+});
+
+export const getPersonalChatByChatId = catchAsync(async (req, res, next) => {
     // const userId = req.user._id;
     const { chatId } = req.params;
 
     const personalChat = await PersonalChat.findById(chatId);
 
     if (!personalChat) {
-        return res.status(404).json({
-            status: RESPONSE_STATUS.FAIL,
-            message: "Personal chat not found",
-        });
+        return next(new AppError("Personal chat not found", 404));
     }
 
     res.status(200).json({

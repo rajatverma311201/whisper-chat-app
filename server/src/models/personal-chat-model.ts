@@ -1,7 +1,7 @@
 import { PERSONAL_CHAT_STATUS } from "@/utils/constants";
 import { Schema, model } from "mongoose";
 
-const personalChatSchema = new Schema(
+const personalChatSchema = new Schema<IPersonalChat>(
     {
         user1: {
             type: Schema.Types.ObjectId,
@@ -53,4 +53,7 @@ const personalChatSchema = new Schema(
     }
 );
 
-export const PersonalChat = model("PersonalChat", personalChatSchema);
+export const PersonalChat = model<IPersonalChat>(
+    "PersonalChat",
+    personalChatSchema
+);

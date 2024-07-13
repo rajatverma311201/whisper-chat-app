@@ -33,10 +33,28 @@ declare global {
         changedPasswordAfter: (JWTTimestamp: number) => boolean;
     }
 
-    interface IChat extends Document {
-        message: string;
-        sender: string;
-        receiver: string;
-        createdAt: Date;
+    interface IPersonalChat extends Document {
+        user1: IUser;
+        user2: IUser;
+        user1HasArchivedChat: boolean;
+        user2HasArchivedChat: boolean;
+        user1ChatStatus: string;
+        user2ChatStatus: string;
+        user1ChatStatusActiveTimestamp: Date;
+        user2ChatStatusActiveTimestamp: Date;
+    }
+
+    interface IPersonalMessage extends Document {
+        chat: IPersonalChat;
+        content: string;
+        sender: IUser;
+        receiver: IUser;
+        status: string;
+        isEdited: boolean;
+        editedAt: Date;
+        isDeleted: boolean;
+        deletedAt: Date;
+        deletedBy: IUser[];
+        deletedForEveryone: boolean;
     }
 }
