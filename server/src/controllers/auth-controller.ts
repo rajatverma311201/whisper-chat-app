@@ -1,8 +1,8 @@
 import { User } from "@/models/user-model";
 import { AppError } from "@/utils/app-error";
 import { catchAsync } from "@/utils/catch-async";
-import jwt, { JwtPayload } from "jsonwebtoken";
 import { Response } from "express";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 const signToken = (id: string) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
