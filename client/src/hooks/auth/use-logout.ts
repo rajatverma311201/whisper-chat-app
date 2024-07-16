@@ -10,9 +10,11 @@ export const useLogout = (onSuccess?: () => void) => {
         localStorage.removeItem(LS.JWT_TOKEN_KEY);
         localStorage.removeItem(LS.JWT_TOKEN_EXPIRY_KEY);
         queryClient.invalidateQueries({ queryKey: getCurrentUserKey() });
+
+        toast.dismiss();
         toast.success("Logged out Successfully");
         onSuccess?.();
     };
 
-    return { logout };
+    return logout;
 };

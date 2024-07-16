@@ -10,4 +10,5 @@ const SignupPage: React.FC<SignupPageProps> = ({}) => {
         </>
     );
 };
+
 export default SignupPage;

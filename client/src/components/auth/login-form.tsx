@@ -22,6 +22,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 import { Separator } from "@/components/ui/separator";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
     email: z.string().email(),
@@ -117,9 +118,16 @@ export const LoginForm = () => {
                         <Button
                             disabled={isLoading}
                             type="submit"
-                            className="w-full"
+                            className="w-full disabled:cursor-not-allowed"
                         >
-                            Submit
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="mr-2 animate-spin text-primary-foreground" />{" "}
+                                    Please wait
+                                </>
+                            ) : (
+                                "Submit"
+                            )}
                         </Button>
                     </CardFooter>
                 </form>

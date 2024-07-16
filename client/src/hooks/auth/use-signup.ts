@@ -38,11 +38,13 @@ export const useSignup = () => {
                 LS.JWT_TOKEN_EXPIRY_KEY,
                 data[LS.JWT_TOKEN_EXPIRY_KEY] as string,
             );
+            toast.dismiss();
             toast.success("Logged in Successfully");
             queryClient.invalidateQueries({ queryKey: getCurrentUserKey() });
             router.replace("/");
         },
         onError: (error: Error) => {
+            toast.dismiss();
             toast.error(error.message);
         },
     });

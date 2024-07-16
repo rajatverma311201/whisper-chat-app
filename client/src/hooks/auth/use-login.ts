@@ -23,6 +23,8 @@ export const useLogin = () => {
             return apiLogin(email, password);
         },
         onSuccess: (data) => {
+            toast.dismiss();
+
             toast.success("Logged in Successfully");
             localStorage.setItem(
                 LS.JWT_TOKEN_KEY,
@@ -37,6 +39,8 @@ export const useLogin = () => {
             router.replace("/");
         },
         onError: (error: Error) => {
+            toast.dismiss();
+
             toast.error(error.message);
         },
     });

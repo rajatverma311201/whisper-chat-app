@@ -1,3 +1,5 @@
+import { LS } from "./constants";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 enum Request {
@@ -42,10 +44,14 @@ export class Fetch {
         method: RequestMethod,
         reqBody?: RequestBody,
     ) {
+        const lsItem = localStorage.getItem(LS.JWT_TOKEN_KEY);
+        const jwtToken = lsItem ? lsItem.toString() : "";
+
         const reqContent: RequestContent = {
             method,
             headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${jwtToken}`,
             },
             cache: "no-store",
         };
@@ -55,6 +61,7 @@ export class Fetch {
 
         const resp = await fetch(`${API_URL}/${url}`, reqContent);
 
+        // await wait(2000);
         const data = await resp.json();
 
         if (!resp.ok || resp.status >= 400) {
