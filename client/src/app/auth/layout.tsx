@@ -10,23 +10,16 @@ interface AuthLayoutProps {
 }
 
 const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
-	const { currentUser, isLoadingCurrentUser, isFetchingCurrentUser, error } =
-		useAuthUser();
+	const { currentUser, isLoadingCurrentUser, error } = useAuthUser();
 	const router = useRouter();
-	console.log(currentUser);
 
 	useEffect(() => {
-		if (!isLoadingCurrentUser && !isFetchingCurrentUser && currentUser) {
+		if (!isLoadingCurrentUser && currentUser) {
 			router.replace("/");
 		}
-	}, [isLoadingCurrentUser, isFetchingCurrentUser, currentUser, router]);
+	}, [isLoadingCurrentUser, , currentUser, router]);
 
-	if (
-		isLoadingCurrentUser ||
-		isFetchingCurrentUser ||
-		currentUser === undefined ||
-		currentUser
-	) {
+	if (isLoadingCurrentUser || currentUser === undefined || currentUser) {
 		return <PageLoader />;
 	}
 

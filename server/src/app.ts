@@ -5,7 +5,10 @@ import { userRouter } from "@/routes/user-routes";
 
 import cors from "cors";
 import morgan from "morgan";
-import { globalErrorHandler } from "./utils/global-error-handler";
+
+import { personalChatRouter } from "@/routes/personal-chat-routes";
+import { personalMessageRouter } from "@/routes/personal-message-routes";
+import { globalErrorHandler } from "@/utils/global-error-handler";
 
 const app: Express = express();
 
@@ -21,7 +24,9 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/api/auth", authRouter);
-app.use("/api/user", userRouter);
+app.use("/api/users", userRouter);
+app.use("/api/personal-chats", personalChatRouter);
+app.use("/api/personal-messages", personalMessageRouter);
 
 app.use(globalErrorHandler);
 

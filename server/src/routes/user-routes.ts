@@ -1,6 +1,7 @@
+import * as UserController from "@/controllers/user-controller";
 import { Router } from "express";
-import { protect as AuthProtect } from "@/controllers/auth-controller";
-
 const router = Router();
+
+router.route("/").get(UserController.getAllUsers);
 
 export { router as userRouter };

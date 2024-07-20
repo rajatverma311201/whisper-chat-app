@@ -12,10 +12,6 @@ const personalMessageSchema = new Schema<IPersonalMessage>(
             type: Schema.Types.ObjectId,
             ref: "User",
         },
-        receiver: {
-            type: Schema.Types.ObjectId,
-            ref: "User",
-        },
         status: {
             type: String,
             enum: [

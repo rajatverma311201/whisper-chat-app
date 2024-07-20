@@ -1,4 +1,5 @@
 import { PersonalChat } from "@/models/personal-chat-model";
+import { PersonalMessage } from "@/models/personal-message-model";
 import { AppError } from "@/utils/app-error";
 import { catchAsync } from "@/utils/catch-async";
 import { RESPONSE_STATUS } from "@/utils/constants";
@@ -7,7 +8,15 @@ export const getAllMyPersonalChats = catchAsync(async (req, res) => {
     const userId = req.user._id;
     const personalChats = await PersonalChat.find({
         $or: [{ user1: userId }, { user2: userId }],
-    });
+    })
+        .populate({
+            path: "user1",
+            select: "name",
+        })
+        .populate({
+            path: "user2",
+            select: "name",
+        });
 
     res.status(200).json({
         status: RESPONSE_STATUS.SUCCESS,
@@ -18,7 +27,7 @@ export const getAllMyPersonalChats = catchAsync(async (req, res) => {
 
 export const createPersonalChatByUserId = catchAsync(async (req, res, next) => {
     const userId = req.user._id;
-    const { userId2 } = req.body;
+    const { userId: userId2 } = req.body;
 
     if (!userId2) {
         return next(new AppError("Another User is required", 400));
@@ -101,5 +110,23 @@ export const archivePersonalChatByUserID = catchAsync(async (req, res) => {
     res.status(200).json({
         status: RESPONSE_STATUS.SUCCESS,
         data: personalChat,
+    });
+});
+
+export const getChatMessagesByChatId = catchAsync(async (req, res) => {
+    const { chatId } = req.params;
+
+    const messages = await PersonalMessage.find({
+        chat: chatId,
+    })
+        .populate({
+            path: "sender",
+            select: "name",
+        })
+        .sort({ createdAt: 1 });
+
+    res.status(200).json({
+        status: RESPONSE_STATUS.SUCCESS,
+        data: messages,
     });
 });

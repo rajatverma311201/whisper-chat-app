@@ -48,7 +48,6 @@ declare global {
         chat: IPersonalChat;
         content: string;
         sender: IUser;
-        receiver: IUser;
         status: string;
         isEdited: boolean;
         editedAt: Date;

@@ -38,17 +38,13 @@ export const createMessage = catchAsync(async (req, res, next) => {
         }
     }
 
-    const receiver =
-        userId.toString() === personalChat.user1.toString()
-            ? personalChat.user2
-            : personalChat.user1;
-
     const newMessage = await PersonalMessage.create({
         chat: chatId,
         content: message,
         sender: userId,
-        receiver,
     });
+
+    console.log(newMessage);
 
     res.status(200).json({
         status: RESPONSE_STATUS.SUCCESS,
