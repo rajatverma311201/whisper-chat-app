@@ -4,17 +4,17 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export const useLogout = (onSuccess?: () => void) => {
-    const queryClient = useQueryClient();
+	const queryClient = useQueryClient();
 
-    const logout = () => {
-        localStorage.removeItem(LS.JWT_TOKEN_KEY);
-        localStorage.removeItem(LS.JWT_TOKEN_EXPIRY_KEY);
-        queryClient.invalidateQueries({ queryKey: getCurrentUserKey() });
+	const logout = () => {
+		localStorage.removeItem(LS.JWT_TOKEN_KEY);
+		localStorage.removeItem(LS.JWT_TOKEN_EXPIRY_KEY);
+		queryClient.invalidateQueries({ queryKey: getCurrentUserKey() });
 
-        toast.dismiss();
-        toast.success("Logged out Successfully");
-        onSuccess?.();
-    };
+		toast.dismiss();
+		toast.success("Logged out Successfully");
+		onSuccess?.();
+	};
 
-    return logout;
+	return logout;
 };

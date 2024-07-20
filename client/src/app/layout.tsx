@@ -7,21 +7,27 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			staleTime: 1000 * 60,
+		},
+	},
+});
 
 export default function RootLayout({
-    children,
+	children,
 }: Readonly<{
-    children: React.ReactNode;
+	children: React.ReactNode;
 }>) {
-    return (
-        <html lang="en" className="">
-            <body className={inter.className}>
-                <QueryClientProvider client={queryClient}>
-                    <Toaster richColors={true} position="top-center" />
-                    <>{children}</>
-                </QueryClientProvider>
-            </body>
-        </html>
-    );
+	return (
+		<html lang="en" className="">
+			<body className={inter.className}>
+				<QueryClientProvider client={queryClient}>
+					<Toaster richColors={true} position="top-center" />
+					<>{children}</>
+				</QueryClientProvider>
+			</body>
+		</html>
+	);
 }

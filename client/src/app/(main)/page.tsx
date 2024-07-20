@@ -1,14 +1,27 @@
 "use client";
-import { Button } from "@/components/ui/button";
+import { ChatView } from "@/components/chat/chat-view";
+import { SidebarView } from "@/components/sidebar/sidebar-view";
+import {
+	ResizableHandle,
+	ResizablePanel,
+	ResizablePanelGroup,
+} from "@/components/ui/resizable";
 import { useLogout } from "@/hooks/auth/use-logout";
 
 export default function Home() {
-    const logout = useLogout();
+	const logout = useLogout();
 
-    return (
-        <main className="flex min-h-screen flex-col items-center justify-between p-24">
-            <Button onClick={logout}> Logout</Button>
-            <Button>Hello</Button>
-        </main>
-    );
+	return (
+		<main className="flex h-screen w-full flex-col items-center justify-between">
+			<ResizablePanelGroup direction="horizontal" className="h-full">
+				<ResizablePanel defaultSize={30} minSize={20} maxSize={35}>
+					<SidebarView />
+				</ResizablePanel>
+				<ResizableHandle />
+				<ResizablePanel defaultSize={70}>
+					<ChatView />
+				</ResizablePanel>
+			</ResizablePanelGroup>
+		</main>
+	);
 }
