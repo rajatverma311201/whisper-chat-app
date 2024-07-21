@@ -10,6 +10,10 @@ import { personalChatRouter } from "@/routes/personal-chat-routes";
 import { personalMessageRouter } from "@/routes/personal-message-routes";
 import { globalErrorHandler } from "@/utils/global-error-handler";
 
+if (process.env.NODE_ENV === "production") {
+    console.log = function (...params: any) {};
+}
+
 const app: Express = express();
 
 app.use(cors());

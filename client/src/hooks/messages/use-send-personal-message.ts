@@ -6,7 +6,13 @@ interface MutationFnArgs {
 	message: string;
 }
 
-export const useSendPersonalMessage = () => {
+interface UseSendPersonalMessageArgs {
+	onSuccess?: () => void;
+}
+
+export const useSendPersonalMessage = ({
+	onSuccess,
+}: UseSendPersonalMessageArgs) => {
 	const {
 		mutate: sendMessage,
 		isPending: isSendingMessage,
@@ -15,7 +21,9 @@ export const useSendPersonalMessage = () => {
 		mutationFn: ({ chatId, message }: MutationFnArgs) => {
 			return sendPersonalMessageInChat(chatId, message);
 		},
-		onSuccess: (data) => {},
+		onSuccess: (data) => {
+			onSuccess?.();
+		},
 		onError: (error: Error) => {},
 	});
 

@@ -15,10 +15,11 @@ export const PersonalMessageView: React.FC<PersonalMessageViewProps> = ({
 	return (
 		<p
 			className={cn(
-				"max-w-[500px] break-words rounded-lg px-4 py-3",
+				"max-w-[500px] break-words rounded-xl px-4 py-3",
 				isMyMessage ? "bg-emerald-600" : "bg-gray-200",
 				isMyMessage ? "text-white" : "text-black",
 				isMyMessage ? "ml-auto" : "mr-auto",
+				isMyMessage ? "rounded-br-none" : "rounded-tl-none",
 			)}
 		>
 			{message.content}

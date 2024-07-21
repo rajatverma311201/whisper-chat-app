@@ -1,5 +1,6 @@
 import { useActiveChat } from "@/hooks/global/use-active-chat";
 import { useChatMessages } from "@/hooks/messages/use-chat-messages";
+import { useEffect, useRef } from "react";
 import { PersonalMessageView } from "./personal-message-view";
 
 interface ChatContentProps {}
@@ -32,14 +33,24 @@ export const ChatContentSection: React.FC<ChatContentSectionProps> = ({
 	activeChatId,
 }) => {
 	const { chatMessages } = useChatMessages(activeChatId);
+	const messagesEndRef = useRef<HTMLDivElement>(null);
 
 	console.log(chatMessages);
+
+	const scrollToBottom = () => {
+		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+	};
+
+	useEffect(() => {
+		scrollToBottom();
+	}, [chatMessages]);
 
 	return (
 		<div className="space-y-4 p-5">
 			{chatMessages?.map((msg: Record<any, any>) => (
 				<PersonalMessageView key={msg._id} message={msg} />
 			))}
+			<div ref={messagesEndRef} />
 		</div>
 	);
 };
