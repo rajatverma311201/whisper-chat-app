@@ -17,7 +17,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
 		if (!isLoadingCurrentUser && currentUser) {
 			router.replace("/");
 		}
-	}, [isLoadingCurrentUser, , currentUser, router]);
+	}, [isLoadingCurrentUser, currentUser, router]);
 
 	if (isLoadingCurrentUser || currentUser === undefined || currentUser) {
 		return <PageLoader />;

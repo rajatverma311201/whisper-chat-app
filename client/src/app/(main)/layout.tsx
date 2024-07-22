@@ -16,7 +16,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 		if (!isLoadingCurrentUser && currentUser === null) {
 			router.replace("/auth");
 		}
-	}, [isLoadingCurrentUser, , currentUser, router]);
+	}, [isLoadingCurrentUser, currentUser, router]);
 
 	if (isLoadingCurrentUser || !currentUser) {
 		return <PageLoader />;
