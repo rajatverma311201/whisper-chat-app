@@ -13,6 +13,10 @@ const groupChatSchema = new Schema(
             ref: "User",
             required: true,
         },
+        lastMessageAt: {
+            type: Date,
+            default: Date.now(),
+        },
     },
     {
         timestamps: true,

@@ -56,4 +56,24 @@ declare global {
         deletedBy: IUser[];
         deletedForEveryone: boolean;
     }
+
+    interface IMessage extends Document {
+        content?: string;
+        file?: string;
+        fileType?: string;
+        sender: Schema.Types.ObjectId;
+        isEdited: boolean;
+        editedAt: Date;
+        deletedForEveryone: boolean;
+    }
+
+    interface IDirectMessage extends Document {
+        directChat: Schema.Types.ObjectId;
+        msg: Schema.Types.ObjectId;
+    }
+
+    interface IGroupMessage extends Document {
+        groupChat: Schema.Types.ObjectId;
+        msg: Schema.Types.ObjectId;
+    }
 }

@@ -12,6 +12,7 @@ export const MESSAGE_STATUS = {
 export const GROUP_PARTICIPANT_ROLE = {
     ADMIN: "admin",
     MEMBER: "member",
+    MODERATOR: "moderator",
 };
 
 export const PERSONAL_CHAT_STATUS = {
@@ -19,3 +20,8 @@ export const PERSONAL_CHAT_STATUS = {
     BLOCKED: "blocked",
     DELETED: "deleted",
 };
+
+export enum MESSAGE_TYPE {
+    DIRECT = "DIRECT",
+    GROUP = "GROUP",
+}

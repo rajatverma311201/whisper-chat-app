@@ -1,5 +1,4 @@
 import { GROUP_PARTICIPANT_ROLE } from "@/utils/constants";
-import { group } from "console";
 import { Schema, model } from "mongoose";
 
 const groupParticipantSchema = new Schema({
@@ -17,7 +16,11 @@ const groupParticipantSchema = new Schema({
 
     role: {
         type: String,
-        enum: [GROUP_PARTICIPANT_ROLE.ADMIN, GROUP_PARTICIPANT_ROLE.MEMBER],
+        enum: [
+            GROUP_PARTICIPANT_ROLE.ADMIN,
+            GROUP_PARTICIPANT_ROLE.MODERATOR,
+            GROUP_PARTICIPANT_ROLE.MEMBER,
+        ],
         default: GROUP_PARTICIPANT_ROLE.MEMBER,
     },
 });

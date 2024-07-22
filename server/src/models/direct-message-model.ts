@@ -1,10 +1,10 @@
 import { Schema, model } from "mongoose";
 
-const groupMessageSchema = new Schema<IGroupMessage>(
+const directMessageSchema = new Schema<IDirectMessage>(
     {
-        groupChat: {
+        directChat: {
             type: Schema.Types.ObjectId,
-            ref: "GroupChat",
+            ref: "DirectChat",
         },
         msg: {
             type: Schema.Types.ObjectId,
@@ -17,9 +17,9 @@ const groupMessageSchema = new Schema<IGroupMessage>(
 );
 
 // Index for quicker queries by chat
-groupMessageSchema.index({ chat: 1 });
+directMessageSchema.index({ chat: 1 });
 
-export const GroupMessageModel = model<IGroupMessage>(
-    "GroupMessage",
-    groupMessageSchema
+export const DirectMessageModel = model<IDirectMessage>(
+    "DirectMessage",
+    directMessageSchema
 );
