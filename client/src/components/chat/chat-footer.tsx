@@ -10,6 +10,7 @@ interface ChatFooterProps {}
 
 export const ChatFooter: React.FC<ChatFooterProps> = ({}) => {
 	const { activeChat } = useActiveChat((state) => state);
+
 	const queryClient = useQueryClient();
 	const { sendMessage } = useSendPersonalMessage({
 		onSuccess: () => {

@@ -1,0 +1,171 @@
+import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useAuthUser } from "@/hooks/auth/use-auth-user";
+import { useAllUsers } from "@/hooks/users/use-all-users";
+import { getNameInitials } from "@/lib/utils";
+import { Users2, X } from "lucide-react";
+import React, { useEffect } from "react";
+import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Badge } from "../ui/badge";
+import { Separator } from "../ui/separator";
+
+interface NewGroupModalProps {}
+
+export const NewGroupModal: React.FC<NewGroupModalProps> = () => {
+	const [selectedUsers, setSelectedUsers] = React.useState<User[]>([]);
+	const [otherUsers, setOtherUsers] = React.useState<User[]>([]);
+
+	const { currentUser } = useAuthUser();
+	const { users } = useAllUsers();
+
+	useEffect(() => {
+		if (users && currentUser) {
+			setOtherUsers(users.filter((u) => u._id !== currentUser?._id));
+		}
+		return () => {
+			setSelectedUsers([]);
+			setOtherUsers([]);
+		};
+	}, [users, currentUser]);
+
+	const handleSelectUser = (user: User) => {
+		setSelectedUsers((prev) => [...prev, user]);
+		setOtherUsers((prev) => prev.filter((u) => u._id !== user._id));
+	};
+
+	const handleRemoveUser = (user: User) => {
+		setSelectedUsers((prev) => prev.filter((u) => u._id !== user._id));
+		setOtherUsers((prev) => [...prev, user]);
+	};
+
+	const handleClearSelections = (open: boolean) => {
+		console.log("handleClearSelections");
+
+		if (!users || !currentUser) return;
+
+		if (open) {
+			return;
+		}
+
+		setSelectedUsers([]);
+		setOtherUsers(users.filter((u) => u._id !== currentUser?._id));
+	};
+
+	return (
+		<Dialog onOpenChange={handleClearSelections}>
+			<DialogTrigger asChild>
+				<Button variant="outline">Edit Profile</Button>
+			</DialogTrigger>
+			<DialogContent className="sm:max-w-[425px]">
+				<DialogHeader>
+					<DialogDescription className="mb-2">
+						<Users2
+							className="mx-auto rounded-full bg-primary p-4 text-primary-foreground"
+							size={75}
+						/>
+					</DialogDescription>
+					<DialogTitle className="text-center">
+						Create a New Group
+					</DialogTitle>
+				</DialogHeader>
+
+				<Input placeholder="Enter group name" />
+
+				<GroupSelectedUsersList
+					selectedUsers={selectedUsers}
+					onDeSelectUser={handleRemoveUser}
+				/>
+				<GroupCreationUsersList
+					otherUsers={otherUsers}
+					onSelectUser={handleSelectUser}
+				/>
+
+				{/* </DialogFooter> */}
+			</DialogContent>
+		</Dialog>
+	);
+};
+
+interface GroupCreationUsersListProps {
+	otherUsers: User[];
+	onSelectUser: (user: User) => void;
+}
+
+export const GroupCreationUsersList: React.FC<GroupCreationUsersListProps> = ({
+	otherUsers,
+	onSelectUser,
+}) => {
+	return (
+		<>
+			<div className="rounded-md border p-2">
+				<p className="mb-2 text-center font-medium">
+					Choose Group Members
+				</p>
+				<ul className="flex max-h-[50vh] flex-col gap-2 overflow-y-auto">
+					{[...otherUsers, ...otherUsers, ...otherUsers]?.map(
+						(user: User, idx: number) => {
+							return (
+								<>
+									<li
+										key={user._id}
+										className="hover: flex cursor-pointer items-center gap-2 rounded-md p-2 hover:bg-primary/20"
+										onClick={(e) => onSelectUser(user)}
+									>
+										<Avatar>
+											<AvatarFallback>
+												{getNameInitials(user.name)}
+											</AvatarFallback>
+										</Avatar>{" "}
+										{user.name}
+									</li>
+									{!(idx === otherUsers?.length - 1) && (
+										<Separator />
+									)}
+								</>
+							);
+						},
+					)}
+				</ul>
+			</div>
+		</>
+	);
+};
+
+interface GroupSelectedUsersListProps {
+	selectedUsers: User[];
+	onDeSelectUser: (user: User) => void;
+}
+
+export const GroupSelectedUsersList: React.FC<GroupSelectedUsersListProps> = ({
+	selectedUsers,
+	onDeSelectUser,
+}) => {
+	return (
+		<>
+			<div className="flex gap-2">
+				{selectedUsers.map((user) => (
+					<Badge
+						key={user._id}
+						variant={"outline"}
+						className="text-sm font-medium"
+					>
+						{user.name}{" "}
+						<X
+							onClick={(e) => onDeSelectUser(user)}
+							size={20}
+							className="-mr-2 ml-1 cursor-pointer rounded-full p-0.5 hover:bg-gray-200"
+						/>
+					</Badge>
+				))}
+			</div>
+		</>
+	);
+};

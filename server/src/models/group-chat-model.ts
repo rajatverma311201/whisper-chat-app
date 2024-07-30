@@ -6,6 +6,11 @@ const groupChatSchema = new Schema(
             type: String,
             required: true,
         },
+        isGroupChat: {
+            type: Boolean,
+            default: true,
+            immutable: true,
+        },
         description: String,
         image: String,
         createdBy: {

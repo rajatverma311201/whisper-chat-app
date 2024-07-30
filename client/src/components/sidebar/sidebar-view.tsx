@@ -1,7 +1,8 @@
+import { NewGroupModal } from "@/components/group/new-group-modal";
+import { ChatsList } from "@/components/sidebar/chats-list";
 import { Button } from "@/components/ui/button";
 import { useAuthUser } from "@/hooks/auth/use-auth-user";
 import { useLogout } from "@/hooks/auth/use-logout";
-import { ChatsList } from "./chats-list";
 
 interface SidebarViewProps {}
 
@@ -15,6 +16,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({}) => {
 				<h2>{currentUser?.email}</h2>
 			</div>
 			<Button onClick={logout}>Logout</Button>
+			<NewGroupModal />
 			<ChatsList />
 		</div>
 	);
