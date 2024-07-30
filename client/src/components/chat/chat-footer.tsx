@@ -1,5 +1,4 @@
 import { Input } from "@/components/ui/input";
-import { useAuthUser } from "@/hooks/auth/use-auth-user";
 import { useActiveChat } from "@/hooks/global/use-active-chat";
 import { useSendPersonalMessage } from "@/hooks/messages/use-send-personal-message";
 import { getChatMessagesKey } from "@/lib/keys";
@@ -11,7 +10,6 @@ interface ChatFooterProps {}
 
 export const ChatFooter: React.FC<ChatFooterProps> = ({}) => {
 	const { activeChat } = useActiveChat((state) => state);
-	const { currentUser } = useAuthUser();
 	const queryClient = useQueryClient();
 	const { sendMessage } = useSendPersonalMessage({
 		onSuccess: () => {

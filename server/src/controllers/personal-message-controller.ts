@@ -2,7 +2,7 @@ import { PersonalChat } from "@/models/personal-chat-model";
 import { PersonalMessage } from "@/models/personal-message-model";
 import { AppError } from "@/utils/app-error";
 import { catchAsync } from "@/utils/catch-async";
-import { RESPONSE_STATUS } from "@/utils/constants";
+import { MESSAGE_STATUS, RESPONSE_STATUS } from "@/utils/constants";
 
 export const createMessage = catchAsync(async (req, res, next) => {
     const userId = req.user._id;
@@ -50,5 +50,32 @@ export const createMessage = catchAsync(async (req, res, next) => {
         status: RESPONSE_STATUS.SUCCESS,
         message: "Message Created",
         data: newMessage,
+    });
+});
+
+export const updateMessageStatusToRead = catchAsync(async (req, res, next) => {
+    const userId = req.user._id;
+    const { msgId } = req.params;
+
+    const message = await PersonalMessage.findById(msgId);
+
+    if (!message) {
+        return next(new AppError("Message not found", 404));
+    }
+
+    if (message.sender.toString() === userId) {
+        return next(
+            new AppError("You can't mark your own message as seen", 400)
+        );
+    }
+
+    message.status = MESSAGE_STATUS.READ;
+
+    await message.save();
+
+    res.status(200).json({
+        status: RESPONSE_STATUS.SUCCESS,
+        message: "Message status updated",
+        data: message,
     });
 });

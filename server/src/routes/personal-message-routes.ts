@@ -7,6 +7,8 @@ const router = Router();
 router.use(AuthController.protect);
 
 router.route("/").post(PersonalMessageController.createMessage);
-router.route("/:personalChatId");
+router
+    .route("/:msgId/read")
+    .patch(PersonalMessageController.updateMessageStatusToRead);
 
 export { router as personalMessageRouter };

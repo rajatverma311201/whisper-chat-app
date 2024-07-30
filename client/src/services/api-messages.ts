@@ -14,3 +14,9 @@ export const getChatMessages = async (chatId: string) => {
 	const data = await Fetch.GET(url);
 	return data.data;
 };
+
+export const updateMessageStatusToRead = async (msgId: string) => {
+	const url = `api/personal-messages/${msgId}/read`;
+	const data = await Fetch.PATCH(url, {});
+	return data.data;
+};
