@@ -3,6 +3,7 @@ import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
@@ -88,7 +89,11 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = () => {
 					onSelectUser={handleSelectUser}
 				/>
 
-				{/* </DialogFooter> */}
+				<DialogFooter>
+					<div className="flex justify-end">
+						<Button>Create</Button>
+					</div>
+				</DialogFooter>
 			</DialogContent>
 		</Dialog>
 	);
@@ -110,29 +115,27 @@ export const GroupCreationUsersList: React.FC<GroupCreationUsersListProps> = ({
 					Choose Group Members
 				</p>
 				<ul className="flex max-h-[50vh] flex-col gap-2 overflow-y-auto">
-					{[...otherUsers, ...otherUsers, ...otherUsers]?.map(
-						(user: User, idx: number) => {
-							return (
-								<>
-									<li
-										key={user._id}
-										className="hover: flex cursor-pointer items-center gap-2 rounded-md p-2 hover:bg-primary/20"
-										onClick={(e) => onSelectUser(user)}
-									>
-										<Avatar>
-											<AvatarFallback>
-												{getNameInitials(user.name)}
-											</AvatarFallback>
-										</Avatar>{" "}
-										{user.name}
-									</li>
-									{!(idx === otherUsers?.length - 1) && (
-										<Separator />
-									)}
-								</>
-							);
-						},
-					)}
+					{otherUsers?.map((user: User, idx: number) => {
+						return (
+							<>
+								<li
+									key={user._id}
+									className="hover: flex cursor-pointer items-center gap-2 rounded-md p-2 hover:bg-primary/20"
+									onClick={(e) => onSelectUser(user)}
+								>
+									<Avatar>
+										<AvatarFallback>
+											{getNameInitials(user.name)}
+										</AvatarFallback>
+									</Avatar>{" "}
+									{user.name}
+								</li>
+								{!(idx === otherUsers?.length - 1) && (
+									<Separator />
+								)}
+							</>
+						);
+					})}
 				</ul>
 			</div>
 		</>
