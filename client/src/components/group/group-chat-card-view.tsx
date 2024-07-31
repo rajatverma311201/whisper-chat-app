@@ -12,10 +12,14 @@ export const GroupChatCardView: React.FC<GroupChatCardViewProps> = ({
 }) => {
 	return (
 		<>
-			<div onClick={onChatClick}>
+			<div
+				onClick={onChatClick}
+				className="flex cursor-pointer items-center gap-4 bg-slate-50 p-4 hover:bg-slate-100"
+			>
 				<Avatar>
 					<AvatarFallback>{getNameInitials(name)}</AvatarFallback>
 				</Avatar>
+				{name}
 			</div>
 		</>
 	);

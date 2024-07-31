@@ -3,6 +3,37 @@ import { GroupParticipant } from "@/models/group-participant-model";
 import { catchAsync } from "@/utils/catch-async";
 import { GROUP_PARTICIPANT_ROLE, RESPONSE_STATUS } from "@/utils/constants";
 
+export const getAllGroupChatsOfUser = catchAsync(async (req, res) => {
+    const groupChatsTemp = await GroupParticipant.find({
+        user: req.user._id,
+    }).populate({ path: "group", select: "name description image" });
+
+    const groupChats = groupChatsTemp.map(
+        (groupParticipant) => groupParticipant.group
+    );
+
+    res.status(200).json({
+        status: RESPONSE_STATUS.SUCCESS,
+        data: groupChats,
+    });
+});
+
+export const getAllMembersOfGroupChat = catchAsync(async (req, res) => {
+    const groupParticipantsTemp = await GroupParticipant.find({
+        group: req.params.groupId,
+    }).populate({ path: "user", select: "name email image" });
+
+    const groupParticipants = groupParticipantsTemp.map((groupParticipant) => ({
+        user: groupParticipant.user,
+        role: groupParticipant.role,
+    }));
+
+    res.status(200).json({
+        status: RESPONSE_STATUS.SUCCESS,
+        data: groupParticipants,
+    });
+});
+
 export const createGroupChat = catchAsync(async (req, res) => {
     const { name, description, image } = req.body;
 

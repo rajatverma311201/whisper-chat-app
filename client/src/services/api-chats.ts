@@ -22,3 +22,9 @@ export const createGroupChatWithUsers = async (
 	const data = await Fetch.POST(url, { name, userIds: userIds });
 	return data.data;
 };
+
+export const getAllMyGroupChats = async () => {
+	const url = "api/group-chats";
+	const data = await Fetch.GET(url);
+	return data.data;
+};

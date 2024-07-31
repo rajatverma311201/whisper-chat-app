@@ -6,4 +6,6 @@ export const getAllChatsKey = () => ["allChats"];
 
 export const getPersonalChatsKey = () => ["personalChats"];
 
+export const getGroupChatsKey = () => ["groupChats"];
+
 export const getChatMessagesKey = (chatId: string) => ["chatMessages", chatId];
