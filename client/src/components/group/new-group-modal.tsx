@@ -1,3 +1,5 @@
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -9,23 +11,28 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import { useAuthUser } from "@/hooks/auth/use-auth-user";
+import { useCreateGroupChatWithUsers } from "@/hooks/chats/use-create-group-chat-with-users";
 import { useAllUsers } from "@/hooks/users/use-all-users";
 import { getNameInitials } from "@/lib/utils";
-import { Users2, X } from "lucide-react";
-import React, { useEffect } from "react";
-import { Avatar, AvatarFallback } from "../ui/avatar";
-import { Badge } from "../ui/badge";
-import { Separator } from "../ui/separator";
+import { Loader2, Users2, X } from "lucide-react";
+import { Fragment as ReactFragment, useEffect, useState } from "react";
 
 interface NewGroupModalProps {}
 
 export const NewGroupModal: React.FC<NewGroupModalProps> = () => {
-	const [selectedUsers, setSelectedUsers] = React.useState<User[]>([]);
-	const [otherUsers, setOtherUsers] = React.useState<User[]>([]);
+	const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+	const [otherUsers, setOtherUsers] = useState<User[]>([]);
+
+	const [open, setOpen] = useState(false);
 
 	const { currentUser } = useAuthUser();
 	const { users } = useAllUsers();
+	const { createGroupChat, isLoading: isCreatingGroupChat } =
+		useCreateGroupChatWithUsers({ onSuccess: () => setOpen(false) });
+
+	const [groupChatName, setGroupChatName] = useState("");
 
 	useEffect(() => {
 		if (users && currentUser) {
@@ -48,7 +55,7 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = () => {
 	};
 
 	const handleClearSelections = (open: boolean) => {
-		console.log("handleClearSelections");
+		setOpen(open);
 
 		if (!users || !currentUser) return;
 
@@ -60,8 +67,16 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = () => {
 		setOtherUsers(users.filter((u) => u._id !== currentUser?._id));
 	};
 
+	const handleCreateGroup = () => {
+		console.log("handleCreateGroup");
+		createGroupChat({
+			name: groupChatName,
+			userIds: selectedUsers.map((u) => u._id),
+		});
+	};
+
 	return (
-		<Dialog onOpenChange={handleClearSelections}>
+		<Dialog onOpenChange={handleClearSelections} open={open}>
 			<DialogTrigger asChild>
 				<Button variant="outline">Edit Profile</Button>
 			</DialogTrigger>
@@ -78,7 +93,11 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = () => {
 					</DialogTitle>
 				</DialogHeader>
 
-				<Input placeholder="Enter group name" />
+				<Input
+					placeholder="Enter group name"
+					value={groupChatName}
+					onChange={(e) => setGroupChatName(e.target.value)}
+				/>
 
 				<GroupSelectedUsersList
 					selectedUsers={selectedUsers}
@@ -91,7 +110,22 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = () => {
 
 				<DialogFooter>
 					<div className="flex justify-end">
-						<Button>Create</Button>
+						<Button
+							onClick={handleCreateGroup}
+							disabled={isCreatingGroupChat}
+						>
+							{isCreatingGroupChat ? (
+								<>
+									<Loader2
+										size={18}
+										className="mr-2 animate-spin"
+									/>
+									Creating
+								</>
+							) : (
+								<>Create</>
+							)}
+						</Button>
 					</div>
 				</DialogFooter>
 			</DialogContent>
@@ -117,7 +151,7 @@ export const GroupCreationUsersList: React.FC<GroupCreationUsersListProps> = ({
 				<ul className="flex max-h-[50vh] flex-col gap-2 overflow-y-auto">
 					{otherUsers?.map((user: User, idx: number) => {
 						return (
-							<>
+							<ReactFragment key={user._id}>
 								<li
 									key={user._id}
 									className="hover: flex cursor-pointer items-center gap-2 rounded-md p-2 hover:bg-primary/20"
@@ -133,7 +167,7 @@ export const GroupCreationUsersList: React.FC<GroupCreationUsersListProps> = ({
 								{!(idx === otherUsers?.length - 1) && (
 									<Separator />
 								)}
-							</>
+							</ReactFragment>
 						);
 					})}
 				</ul>

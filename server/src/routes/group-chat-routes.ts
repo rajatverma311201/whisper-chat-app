@@ -7,3 +7,5 @@ const router = Router();
 router.use(AuthController.protect);
 
 router.route("/with-users").post(GroupChatController.createGroupChatWithUsers);
+
+export { router as groupChatRouter };

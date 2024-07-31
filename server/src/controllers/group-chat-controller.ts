@@ -44,8 +44,6 @@ export const createGroupChatWithUsers = catchAsync(async (req, res) => {
 
     res.status(201).json({
         status: RESPONSE_STATUS.SUCCESS,
-        data: {
-            groupChat,
-        },
+        data: groupChat,
     });
 });

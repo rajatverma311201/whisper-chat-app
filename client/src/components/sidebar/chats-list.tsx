@@ -1,6 +1,8 @@
 import { useAuthUser } from "@/hooks/auth/use-auth-user";
 import { usePersonalChats } from "@/hooks/chats/use-personal-chats";
 import { useActiveChat } from "@/hooks/global/use-active-chat";
+import { getNameInitials } from "@/lib/utils";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 
 interface ChatsListProps {}
 
@@ -8,7 +10,7 @@ export const ChatsList: React.FC<ChatsListProps> = ({}) => {
 	const { personalChats, isLoadingPersonalChats } = usePersonalChats();
 	const { currentUser } = useAuthUser();
 
-	const setActiveChat = useActiveChat((state) => state.setActiveChat);
+	const { setActiveChat } = useActiveChat();
 
 	if (isLoadingPersonalChats) {
 		return <div>Loading...</div>;
@@ -28,9 +30,19 @@ export const ChatsList: React.FC<ChatsListProps> = ({}) => {
 					return (
 						<li
 							key={chat._id}
-							className="bg-gray-100 px-4 py-2 hover:cursor-pointer hover:bg-gray-200"
-							onClick={() => setActiveChat(chat)}
+							className="flex items-center gap-2 bg-gray-100 px-4 py-2 hover:cursor-pointer hover:bg-gray-200"
+							onClick={() =>
+								setActiveChat({
+									isGroupChat: false,
+									chat: chat,
+								})
+							}
 						>
+							<Avatar>
+								<AvatarFallback>
+									{getNameInitials(chatName)}
+								</AvatarFallback>
+							</Avatar>
 							{chatName}
 							{currentUser?._id == chatUserId ? " (You)" : ""}
 						</li>
