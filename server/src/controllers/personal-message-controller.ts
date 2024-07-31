@@ -44,8 +44,6 @@ export const createMessage = catchAsync(async (req, res, next) => {
         sender: userId,
     });
 
-    console.log(newMessage);
-
     res.status(200).json({
         status: RESPONSE_STATUS.SUCCESS,
         message: "Message Created",

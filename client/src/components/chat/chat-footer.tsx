@@ -14,12 +14,8 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({}) => {
 	const queryClient = useQueryClient();
 	const { sendMessage } = useSendPersonalMessage({
 		onSuccess: () => {
-			console.log("Message sent", {
-				activeChat,
-				queryKey: getChatMessagesKey(activeChat?._id || ""),
-			});
 			queryClient.invalidateQueries({
-				queryKey: getChatMessagesKey(activeChat?._id || ""),
+				queryKey: getChatMessagesKey(activeChat?.chat._id || ""),
 			});
 			setMessage("");
 		},
@@ -29,7 +25,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({}) => {
 
 	const handleSendMessage = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
-		const chatId = activeChat?._id;
+		const chatId = activeChat?.chat._id;
 
 		if (!chatId) {
 			return;

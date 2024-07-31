@@ -18,9 +18,16 @@ export const ChatContent: React.FC<ChatContentProps> = ({}) => {
 		);
 	}
 
+	if (activeChat.isGroupChat) {
+		return (
+			<div className="flex-1 overflow-y-auto bg-gray-50">
+				{activeChat.chat.name}
+			</div>
+		);
+	}
 	return (
 		<div className="flex-1 overflow-y-auto bg-gray-50">
-			<ChatContentSection activeChatId={activeChat._id} />
+			<ChatContentSection activeChatId={activeChat.chat._id} />
 		</div>
 	);
 };
@@ -34,8 +41,6 @@ export const ChatContentSection: React.FC<ChatContentSectionProps> = ({
 }) => {
 	const { chatMessages } = useChatMessages(activeChatId);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
-
-	console.log(chatMessages);
 
 	const scrollToBottom = () => {
 		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

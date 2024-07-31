@@ -17,8 +17,6 @@ export const ChatsList: React.FC<ChatsListProps> = ({}) => {
 		return <div>Loading...</div>;
 	}
 
-	console.log(personalChats);
-
 	return (
 		<div>
 			<ul className="space-y-2 p-2">

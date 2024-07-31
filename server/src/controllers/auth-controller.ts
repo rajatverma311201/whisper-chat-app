@@ -45,7 +45,6 @@ const createSendToken = (user: IUser, statusCode: number, res: Response) => {
 
 export const getCurrentUser = catchAsync(async (req, res, next) => {
     const id = req.user?.id;
-    console.log({ user_id: id });
     let user = await User.findById(id);
     res.status(200).json({
         status: "success",

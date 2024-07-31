@@ -14,7 +14,6 @@ export const PersonalMessageView: React.FC<PersonalMessageViewProps> = ({
 	const { currentUser } = useAuthUser();
 
 	const isMyMessage = currentUser?._id === message.sender._id;
-	console.log("isMyMessage", message);
 
 	useEffect(() => {
 		if (isMyMessage) {

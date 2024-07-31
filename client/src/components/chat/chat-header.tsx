@@ -6,7 +6,6 @@ interface ChatHeaderProps {}
 export const ChatHeader: React.FC<ChatHeaderProps> = ({}) => {
 	const { activeChat } = useActiveChat();
 	const { currentUser } = useAuthUser();
-	console.log({ activeChat });
 
 	if (!activeChat) {
 		return null;

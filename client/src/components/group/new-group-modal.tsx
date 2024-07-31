@@ -68,7 +68,6 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = () => {
 	};
 
 	const handleCreateGroup = () => {
-		console.log("handleCreateGroup");
 		createGroupChat({
 			name: groupChatName,
 			userIds: selectedUsers.map((u) => u._id),
