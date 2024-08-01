@@ -1,4 +1,5 @@
 import { GroupChat } from "@/models/group-chat-model";
+import { GroupMessageModel } from "@/models/group-message-model";
 import { GroupParticipant } from "@/models/group-participant-model";
 import { catchAsync } from "@/utils/catch-async";
 import { GROUP_PARTICIPANT_ROLE, RESPONSE_STATUS } from "@/utils/constants";
@@ -76,5 +77,22 @@ export const createGroupChatWithUsers = catchAsync(async (req, res) => {
     res.status(201).json({
         status: RESPONSE_STATUS.SUCCESS,
         data: groupChat,
+    });
+});
+export const getChatMessagesByChatId = catchAsync(async (req, res) => {
+    const { chatId } = req.params;
+
+    const messages = await GroupMessageModel.find({
+        chat: chatId,
+    })
+        .populate({
+            path: "sender",
+            select: "name",
+        })
+        .sort({ createdAt: 1 });
+
+    res.status(200).json({
+        status: RESPONSE_STATUS.SUCCESS,
+        data: messages,
     });
 });

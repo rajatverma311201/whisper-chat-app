@@ -73,7 +73,10 @@ declare global {
     }
 
     interface IGroupMessage extends Document {
-        groupChat: Schema.Types.ObjectId;
-        msg: Schema.Types.ObjectId;
+        chat: IPersonalChat;
+        content: string;
+        sender: IUser;
+        isEdited: boolean;
+        editedAt: Date;
     }
 }

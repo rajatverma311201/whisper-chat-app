@@ -1,7 +1,10 @@
 import { Input } from "@/components/ui/input";
 import { useActiveChat } from "@/hooks/global/use-active-chat";
-import { useSendPersonalMessage } from "@/hooks/messages/use-send-personal-message";
-import { getChatMessagesKey } from "@/lib/keys";
+import { useSendMessage } from "@/hooks/messages/use-send-message";
+import {
+	getGroupChatMessagesKey,
+	getPersonalChatMessagesKey,
+} from "@/lib/keys";
 import { useQueryClient } from "@tanstack/react-query";
 import { Mic, Plus, Smile } from "lucide-react";
 import { FormEvent, useState } from "react";
@@ -12,15 +15,17 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({}) => {
 	const { activeChat } = useActiveChat((state) => state);
 
 	const queryClient = useQueryClient();
-	const { sendMessage } = useSendPersonalMessage({
+	const { sendMessage } = useSendMessage({
 		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: getChatMessagesKey(activeChat?.chat._id || ""),
+				queryKey: activeChat?.isGroupChat
+					? getGroupChatMessagesKey(activeChat?.chat._id || "")
+					: getPersonalChatMessagesKey(activeChat?.chat._id || ""),
 			});
 			setMessage("");
 		},
 	});
-
+	// const {}
 	const [message, setMessage] = useState("");
 
 	const handleSendMessage = (event: FormEvent<HTMLFormElement>) => {

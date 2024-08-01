@@ -13,4 +13,8 @@ router
     .get(GroupChatController.getAllMembersOfGroupChat);
 router.route("/with-users").post(GroupChatController.createGroupChatWithUsers);
 
+router
+    .route("/:chatId/messages")
+    .get(GroupChatController.getChatMessagesByChatId);
+
 export { router as groupChatRouter };

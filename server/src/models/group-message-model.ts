@@ -2,14 +2,20 @@ import { Schema, model } from "mongoose";
 
 const groupMessageSchema = new Schema<IGroupMessage>(
     {
-        groupChat: {
+        chat: {
             type: Schema.Types.ObjectId,
             ref: "GroupChat",
         },
-        msg: {
+        content: String,
+        sender: {
             type: Schema.Types.ObjectId,
-            ref: "Message",
+            ref: "User",
         },
+        isEdited: {
+            type: Boolean,
+            default: false,
+        },
+        editedAt: Date,
     },
     {
         timestamps: true,
