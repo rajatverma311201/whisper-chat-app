@@ -27,12 +27,12 @@ export const ChatContent: React.FC<ChatContentProps> = ({}) => {
 	// 	);
 	// }
 	return (
-		<div className="flex-1 overflow-y-auto bg-gray-50">
-			<ChatContentSection
-				activeChatId={activeChat.chat._id}
-				isGroupChat={activeChat.isGroupChat}
-			/>
-		</div>
+		// <div className="flex-1 bg-gray-50">
+		<ChatContentSection
+			activeChatId={activeChat.chat._id}
+			isGroupChat={activeChat.isGroupChat}
+		/>
+		// </div>
 	);
 };
 
@@ -47,9 +47,10 @@ export const ChatContentSection: React.FC<ChatContentSectionProps> = ({
 }) => {
 	const { chatMessages } = useChatMessages(activeChatId);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
+	const containerRef = useRef<HTMLDivElement>(null);
 
 	const scrollToBottom = () => {
-		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+		messagesEndRef.current?.scrollIntoView();
 	};
 
 	useEffect(() => {
@@ -57,7 +58,10 @@ export const ChatContentSection: React.FC<ChatContentSectionProps> = ({
 	}, [chatMessages]);
 
 	return (
-		<div className="space-y-4 p-5">
+		<div
+			className="flex-1 space-y-4 overflow-y-auto bg-gray-50 p-5"
+			ref={containerRef}
+		>
 			{chatMessages?.map((msg: Record<any, any>) =>
 				isGroupChat ? (
 					<GroupMessageView key={msg._id} message={msg} />

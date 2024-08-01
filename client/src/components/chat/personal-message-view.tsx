@@ -28,25 +28,28 @@ export const PersonalMessageView: React.FC<PersonalMessageViewProps> = ({
 	}, [isMyMessage, message]);
 
 	return (
-		<p
+		<div
 			className={cn(
-				"max-w-[500px] break-words rounded-xl px-4 py-3",
+				"flex w-fit gap-1.5 rounded-xl px-5 py-3",
 				isMyMessage ? "bg-emerald-600" : "bg-gray-200",
 				isMyMessage ? "text-white" : "text-black",
 				isMyMessage ? "ml-auto" : "mr-auto",
 				isMyMessage ? "rounded-br-none" : "rounded-tl-none",
 			)}
 		>
-			{message.content}
+			<p className="max-w-[500px] break-words">{message.content}</p>
+
 			{isMyMessage && (
-				<>
-					{message.status == "read" ? (
-						<CheckCheck className="ml-auto" size={15} />
-					) : (
-						<Check className="ml-auto" size={15} />
-					)}
-				</>
+				<span className="-mb-1.5 -mr-2 flex flex-col justify-end">
+					<>
+						{message.status == "read" ? (
+							<CheckCheck className="ml-auto" size={15} />
+						) : (
+							<Check className="ml-auto" size={15} />
+						)}
+					</>
+				</span>
 			)}
-		</p>
+		</div>
 	);
 };
