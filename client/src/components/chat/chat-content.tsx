@@ -47,7 +47,6 @@ export const ChatContentSection: React.FC<ChatContentSectionProps> = ({
 }) => {
 	const { chatMessages } = useChatMessages(activeChatId);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
-	const containerRef = useRef<HTMLDivElement>(null);
 
 	const scrollToBottom = () => {
 		messagesEndRef.current?.scrollIntoView();
@@ -58,10 +57,7 @@ export const ChatContentSection: React.FC<ChatContentSectionProps> = ({
 	}, [chatMessages]);
 
 	return (
-		<div
-			className="flex-1 space-y-4 overflow-y-auto bg-gray-50 p-5"
-			ref={containerRef}
-		>
+		<div className="flex-1 space-y-4 overflow-y-auto bg-gray-50 p-5">
 			{chatMessages?.map((msg: Record<any, any>) =>
 				isGroupChat ? (
 					<GroupMessageView key={msg._id} message={msg} />
