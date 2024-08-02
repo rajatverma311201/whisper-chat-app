@@ -1,4 +1,5 @@
 "use client";
+import { ChatDetailsSheet } from "@/components/chat/chat-details-sheet";
 import { ChatView } from "@/components/chat/chat-view";
 import { SidebarView } from "@/components/sidebar/sidebar-view";
 import {
@@ -20,6 +21,7 @@ export default function Home() {
 				<ResizableHandle />
 				<ResizablePanel defaultSize={70}>
 					<ChatView />
+					<ChatDetailsSheet />
 				</ResizablePanel>
 			</ResizablePanelGroup>
 		</main>

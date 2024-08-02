@@ -19,7 +19,7 @@ export const GroupChatCardView: React.FC<GroupChatCardViewProps> = ({
 				<Avatar>
 					<AvatarFallback>{getNameInitials(name)}</AvatarFallback>
 				</Avatar>
-				{name}
+				<span className="text-black">{name}</span>
 			</div>
 		</>
 	);

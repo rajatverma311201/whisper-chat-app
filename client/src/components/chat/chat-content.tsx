@@ -57,7 +57,7 @@ export const ChatContentSection: React.FC<ChatContentSectionProps> = ({
 	}, [chatMessages]);
 
 	return (
-		<div className="flex-1 space-y-4 overflow-y-auto bg-gray-50 p-5">
+		<div className="flex-1 space-y-4 overflow-y-auto bg-gray-50 p-5 dark:bg-stone-950">
 			{chatMessages?.map((msg: Record<any, any>) =>
 				isGroupChat ? (
 					<GroupMessageView key={msg._id} message={msg} />

@@ -42,8 +42,10 @@ export const ChatsList: React.FC<ChatsListProps> = ({}) => {
 									{getNameInitials(chatName)}
 								</AvatarFallback>
 							</Avatar>
-							{chatName}
-							{currentUser?._id == chatUserId ? " (You)" : ""}
+							<span className="text-black">
+								{chatName}
+								{currentUser?._id == chatUserId ? " (You)" : ""}
+							</span>
 						</li>
 					);
 				})}

@@ -28,21 +28,23 @@ export const GroupMessageView: React.FC<GroupMessageViewProps> = ({
 	return (
 		<div
 			className={cn(
-				"flex w-fit justify-end gap-1 break-words rounded-xl px-5 py-3",
-				isMyMessage ? "bg-emerald-600" : "bg-gray-200",
+				"flex w-fit justify-end gap-1 break-words rounded-xl px-5 py-2",
+				isMyMessage ? "bg-accent/90" : "bg-gray-200",
 				isMyMessage ? "text-white" : "text-black",
 				isMyMessage ? "ml-auto" : "mr-auto",
 				isMyMessage ? "rounded-br-none" : "rounded-tl-none",
 			)}
 		>
-			<p className="flex max-w-[500px] flex-col break-words">
+			<div className="">
 				{!isMyMessage && (
-					<span className="text-xs font-semibold text-primary">
+					<p className="text-xs font-semibold text-primary">
 						{message.sender.name}
-					</span>
+					</p>
 				)}
-				<span>{message.content}</span>
-			</p>
+				<p className="flex max-w-[500px] flex-col break-words">
+					<>{message.content}</>
+				</p>
+			</div>
 			{isMyMessage && (
 				<span className="-mb-1.5 -mr-3 flex flex-col justify-end">
 					<>
