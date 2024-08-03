@@ -1,6 +1,7 @@
 import { NewGroupModal } from "@/components/group/new-group-modal";
 import { ChatsList } from "@/components/sidebar/chats-list";
 import { Button } from "@/components/ui/button";
+import { UserProfileSheet } from "@/components/user/user-profile-sheet";
 import { useAuthUser } from "@/hooks/auth/use-auth-user";
 import { useLogout } from "@/hooks/auth/use-logout";
 
@@ -14,6 +15,9 @@ export const SidebarView: React.FC<SidebarViewProps> = ({}) => {
 			<div className="rounded-lg border p-4">
 				<h1>{currentUser?.name}</h1>
 				<h2>{currentUser?.email}</h2>
+			</div>
+			<div className="my-2 flex items-center">
+				<UserProfileSheet />
 			</div>
 			<Button onClick={logout}>Logout</Button>
 			<NewGroupModal />
