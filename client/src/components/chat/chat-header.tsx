@@ -1,6 +1,6 @@
 import { useAuthUser } from "@/hooks/auth/use-auth-user";
+import { useActiveChatName } from "@/hooks/chats/use-active-chat-name";
 import { useActiveChat } from "@/hooks/global/use-active-chat";
-import { useActiveChatName } from "@/hooks/global/use-active-chat-name";
 import { useChatDetailsSheet } from "@/hooks/global/use-chat-details-sheet";
 import { User } from "lucide-react";
 

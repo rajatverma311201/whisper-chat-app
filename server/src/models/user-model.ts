@@ -20,6 +20,11 @@ const userSchema = new Schema<IUser>({
         enum: ["user", "guide", "lead-guide", "admin"],
         default: "user",
     },
+    about: {
+        type: String,
+        trim: true,
+        default: "Hey There, I am using chat app",
+    },
     password: {
         type: String,
         // required: [true, 'Please provide a password'],

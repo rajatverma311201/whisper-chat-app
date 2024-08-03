@@ -11,11 +11,11 @@ export const getAllMyPersonalChats = catchAsync(async (req, res) => {
     })
         .populate({
             path: "user1",
-            select: "name",
+            select: "name email about",
         })
         .populate({
             path: "user2",
-            select: "name",
+            select: "name email about",
         });
 
     res.status(200).json({

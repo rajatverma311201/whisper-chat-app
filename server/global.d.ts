@@ -19,6 +19,7 @@ declare global {
         email: string;
         photo: string;
         role: string;
+        about: string;
         password: string;
         passwordConfirm: string;
         passwordChangedAt: Date;

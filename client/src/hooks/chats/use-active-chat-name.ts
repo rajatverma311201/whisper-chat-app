@@ -1,5 +1,5 @@
 import { useAuthUser } from "../auth/use-auth-user";
-import { useActiveChat } from "./use-active-chat";
+import { useActiveChat } from "../global/use-active-chat";
 
 export const useActiveChatName = () => {
 	const { activeChat } = useActiveChat();
