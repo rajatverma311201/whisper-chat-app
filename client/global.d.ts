@@ -7,6 +7,7 @@ declare global {
 		email: string;
 		photo: string;
 		role: "user" | "guide" | "lead-guide" | "admin";
+		about: string;
 		password: string;
 		passwordConfirm: string;
 		passwordChangedAt: Date;

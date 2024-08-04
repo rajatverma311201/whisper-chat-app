@@ -13,12 +13,7 @@ export const getAllUsers = catchAsync(async (req, res) => {
 export const updateUserProfileDetails = catchAsync(async (req, res) => {
     const userId = req.user._id;
 
-    const { name, about } = req.body;
-
-    const user = await User.findByIdAndUpdate(userId, {
-        name,
-        about,
-    });
+    const user = await User.findByIdAndUpdate(userId, req.body);
 
     res.status(200).json({
         status: "success",
