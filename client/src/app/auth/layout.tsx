@@ -5,6 +5,10 @@ import { useAuthUser } from "@/hooks/auth/use-auth-user";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+import io from "socket.io-client";
+
+// Connect to backend socket server
+
 interface AuthLayoutProps {
 	children: React.ReactNode;
 }
