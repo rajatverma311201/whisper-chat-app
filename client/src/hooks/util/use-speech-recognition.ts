@@ -1,5 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 
+interface SpeechRecognitionWindow extends Window {
+	SpeechRecognition: any;
+	webkitSpeechRecognition: any;
+}
+
 const useSpeechRecognition = ({
 	lang = "en-US",
 	continuous = true,
@@ -8,7 +13,7 @@ const useSpeechRecognition = ({
 	const [isListening, setIsListening] = useState(false);
 	const [transcript, setTranscript] = useState("");
 	const [error, setError] = useState<string | null>(null);
-	const recognitionRef = useRef(null);
+	const recognitionRef = useRef<SpeechRecognition | null>(null);
 
 	useEffect(() => {
 		if (
@@ -22,6 +27,7 @@ const useSpeechRecognition = ({
 		}
 		const SpeechRecognition =
 			window.SpeechRecognition || window.webkitSpeechRecognition;
+
 		recognitionRef.current = new SpeechRecognition();
 		recognitionRef.current.lang = lang;
 		recognitionRef.current.continuous = continuous;
@@ -40,7 +46,7 @@ const useSpeechRecognition = ({
 		};
 
 		return () => {
-			recognitionRef.current.abort();
+			recognitionRef.current?.abort();
 		};
 	}, [lang, continuous, interimResults]);
 

@@ -12,7 +12,9 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { Mic, MicOff, Plus, Smile } from "lucide-react";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
+import EmojiPicker from "emoji-picker-react";
+import useOutsideClick from "@/hooks/util/use-outside-click";
 
 interface ChatFooterProps {}
 
@@ -22,6 +24,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({}) => {
 	const { socket } = useSocket();
 	const typingRef = useRef<boolean>(false);
 	const [message, setMessage] = useState("");
+	const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
 
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -43,6 +46,11 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({}) => {
 			});
 			setMessage("");
 		},
+	});
+
+	const emojiPickerRef = useOutsideClick<HTMLDivElement>(() => {
+		console.log("outside");
+		setEmojiPickerOpen(false);
 	});
 
 	const handleSendMessage = (event: FormEvent<HTMLFormElement>) => {
@@ -131,9 +139,26 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({}) => {
 
 	return (
 		<>
-			<div className="flex items-center gap-5 p-4">
-				<Smile className="stroke-[2.25px]" size={25} />
-				<Plus className="stroke-[2.25px]" size={25} />
+			<div className="flex items-center gap-2 p-5">
+				<Button
+					size={"icon"}
+					variant={"outline"}
+					onClick={() => setEmojiPickerOpen((v) => !v)}
+				>
+					<Smile className="stroke-[2.25px]" size={22.5} />
+				</Button>
+				<div className="fixed bottom-16" ref={emojiPickerRef}>
+					<EmojiPicker
+						open={emojiPickerOpen}
+						onEmojiClick={(emoji) => {
+							setMessage(message + emoji.emoji);
+							setEmojiPickerOpen(false);
+						}}
+					/>
+				</div>
+				<Button size={"icon"} variant={"outline"}>
+					<Plus className="stroke-[2.25px]" size={22.5} />
+				</Button>
 				<form onSubmit={handleSendMessage} autoFocus className="flex-1">
 					<Input
 						value={message}
