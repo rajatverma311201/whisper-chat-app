@@ -27,6 +27,10 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
 		return <div>Error: {error.message}</div>;
 	}
 
-	return <div className="flex h-full justify-center pt-20">{children}</div>;
+	return (
+		<div className="flex min-h-screen flex-col items-center justify-center pt-5">
+			{children}
+		</div>
+	);
 };
 export default AuthLayout;

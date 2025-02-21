@@ -31,7 +31,7 @@ export const PersonalMessageView: React.FC<PersonalMessageViewProps> = ({
 		<div
 			className={cn(
 				"flex w-fit gap-1.5 rounded-xl px-5 py-3",
-				isMyMessage ? "bg-accent/90" : "bg-gray-200",
+				isMyMessage ? "bg-primary/90" : "bg-gray-200",
 				isMyMessage ? "text-white" : "text-black",
 				isMyMessage ? "ml-auto" : "mr-auto",
 				isMyMessage ? "rounded-br-none" : "rounded-tl-none",

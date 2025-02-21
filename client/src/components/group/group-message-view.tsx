@@ -29,7 +29,7 @@ export const GroupMessageView: React.FC<GroupMessageViewProps> = ({
 		<div
 			className={cn(
 				"flex w-fit justify-end gap-1 break-words rounded-xl px-5 py-2",
-				isMyMessage ? "bg-accent/90" : "bg-gray-200",
+				isMyMessage ? "bg-primary" : "bg-gray-200",
 				isMyMessage ? "text-white" : "text-black",
 				isMyMessage ? "ml-auto" : "mr-auto",
 				isMyMessage ? "rounded-br-none" : "rounded-tl-none",

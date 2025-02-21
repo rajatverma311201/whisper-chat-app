@@ -76,8 +76,8 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = () => {
 
 	return (
 		<Dialog onOpenChange={handleClearSelections} open={open}>
-			<DialogTrigger asChild>
-				<Button variant="outline">Edit Profile</Button>
+			<DialogTrigger asChild className="ml-4">
+				<Button variant="outline">Create Group</Button>
 			</DialogTrigger>
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>

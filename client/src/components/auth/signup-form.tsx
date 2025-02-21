@@ -65,7 +65,7 @@ export const SignupForm = () => {
 	}
 
 	return (
-		<Card className="w-full sm:w-[500px]">
+		<Card className="h-fit w-full sm:w-[500px]">
 			<CardHeader>
 				<CardTitle className="text-primary">Signup</CardTitle>
 				{/* <CardDescription className="flex justify-center gap-5">

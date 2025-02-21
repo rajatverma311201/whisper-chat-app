@@ -57,7 +57,7 @@ export const LoginForm = () => {
 	}
 
 	return (
-		<Card className="w-full sm:w-[500px]">
+		<Card className="h-fit w-full sm:w-[500px]">
 			<CardHeader>
 				<CardTitle className="text-primary">Login</CardTitle>
 				{/* <CardDescription className="flex justify-center gap-5">
