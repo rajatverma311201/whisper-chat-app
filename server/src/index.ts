@@ -20,6 +20,7 @@ const DB = process.env.DATABASE_URI.replace(
 mongoose.connect(DB).then(() => console.log("DB connection successful!"));
 
 const port = process.env.PORT || 9999;
+
 app.listen(port, () => {
     console.log(`[server]: Server is running at http://localhost:${port}`);
 });

@@ -38,6 +38,7 @@
         "mongoose": "^8.5.0",
         "morgan": "^1.10.0",
         "tsconfig-paths": "^4.2.0",
+        "tsx": "^4.19.3",
         "validator": "^13.12.0"
     }
 }
