@@ -29,7 +29,7 @@ export default function RootLayout({
 				<QueryClientProvider client={queryClient}>
 					<Toaster richColors={true} position="top-center" />
 					<>{children}</>
-					<ReactQueryDevtools initialIsOpen={false} />
+					{/* <ReactQueryDevtools initialIsOpen={false} /> */}
 				</QueryClientProvider>
 			</body>
 		</html>

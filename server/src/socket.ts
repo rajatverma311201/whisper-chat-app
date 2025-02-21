@@ -1,42 +1,6 @@
 import { Server as ExpressHttpServer } from "http";
 import { Socket, Server as SocketServer } from "socket.io";
 
-// // const socketIdToUserIdMap = new Map<string, string>();
-
-// // export const setSocketIdToUserId = (userId: string, socketId: string) => {
-// //     socketIdToUserIdMap.set(socketId, userId);
-// // };
-
-// // export const getSocketIdToUserId = (socketId: string) => {
-// //     return socketIdToUserIdMap.get(socketId);
-// // };
-
-// // export const deleteSocketIdToUserId = (socketId: string) => {
-// //     socketIdToUserIdMap.delete(socketId);
-// // };
-
-// // const userIdToSocketIdMap = new Map<string, string>();
-
-// // export const setUserIdToSocketId = (userId: string, socketId: string) => {
-// //     userIdToSocketIdMap.set(userId, socketId);
-// // };
-
-// // export const getUserIdToSocketId = (userId: string) => {
-// //     return userIdToSocketIdMap.get(userId);
-// // };
-
-// // export const deleteUserIdToSocketId = (userId: string) => {
-// //     userIdToSocketIdMap.delete(userId);
-// // };
-
-// export const deleteSocketIdAndUserId = (socketId: string) => {
-//     const userId = socketIdToUserIdMap.get(socketId);
-//     if (userId) {
-//         userIdToSocketIdMap.delete(userId);
-//     }
-//     socketIdToUserIdMap.delete(socketId);
-// };
-
 export const socketHandler = (appHttpServer: ExpressHttpServer) => {
     const socketsAndUsers = new SocketsAndUsers();
 
@@ -66,13 +30,25 @@ export const socketHandler = (appHttpServer: ExpressHttpServer) => {
 
         socket.on(SocketConst.PERSONAL_CHAT_TYPING, (data) => {
             console.log("typing", data);
-            io.emit(SocketConst.PERSONAL_CHAT_TYPING, data);
+
+            const receiverSocketId = socketsAndUsers.getSocketId(
+                data.receiverId
+            );
+            io.to(receiverSocketId).emit(
+                SocketConst.PERSONAL_CHAT_TYPING,
+                data
+            );
         });
 
         socket.on(SocketConst.PERSONAL_CHAT_STOP_TYPING, (data) => {
             console.log("typing-stop", data);
-            io.emit(SocketConst.PERSONAL_CHAT_STOP_TYPING, data);
-            io.to(socket.id).emit(SocketConst.PERSONAL_CHAT_STOP_TYPING, data);
+            const receiverSocketId = socketsAndUsers.getSocketId(
+                data.receiverId
+            );
+            io.to(receiverSocketId).emit(
+                SocketConst.PERSONAL_CHAT_STOP_TYPING,
+                data
+            );
         });
     });
 };
