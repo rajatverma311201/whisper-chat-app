@@ -140,21 +140,23 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({}) => {
 	return (
 		<>
 			<div className="flex items-center gap-2 p-5">
-				<Button
-					size={"icon"}
-					variant={"outline"}
-					onClick={() => setEmojiPickerOpen((v) => !v)}
-				>
-					<Smile className="stroke-[2.25px]" size={22.5} />
-				</Button>
-				<div className="fixed bottom-16" ref={emojiPickerRef}>
-					<EmojiPicker
-						open={emojiPickerOpen}
-						onEmojiClick={(emoji) => {
-							setMessage(message + emoji.emoji);
-							setEmojiPickerOpen(false);
-						}}
-					/>
+				<div className="" ref={emojiPickerRef}>
+					<Button
+						size={"icon"}
+						variant={"outline"}
+						onClick={() => setEmojiPickerOpen((v) => !v)}
+					>
+						<Smile className="stroke-[2.25px]" size={22.5} />
+					</Button>
+					<div className="fixed bottom-16">
+						<EmojiPicker
+							open={emojiPickerOpen}
+							onEmojiClick={(emoji) => {
+								setMessage(message + emoji.emoji);
+								setEmojiPickerOpen(false);
+							}}
+						/>
+					</div>
 				</div>
 				<Button size={"icon"} variant={"outline"}>
 					<Plus className="stroke-[2.25px]" size={22.5} />

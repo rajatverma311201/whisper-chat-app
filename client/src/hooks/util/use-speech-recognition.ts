@@ -1,10 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 
-interface SpeechRecognitionWindow extends Window {
-	SpeechRecognition: any;
-	webkitSpeechRecognition: any;
-}
-
 const useSpeechRecognition = ({
 	lang = "en-US",
 	continuous = true,
