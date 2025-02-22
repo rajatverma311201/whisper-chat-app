@@ -2,7 +2,7 @@ import { useAuthUser } from "@/hooks/auth/use-auth-user";
 import { usePersonalChats } from "@/hooks/chats/use-personal-chats";
 import { useActiveChat } from "@/hooks/global/use-active-chat";
 import { getNameInitials } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { GroupChatsList } from "./group-chats-list";
 
 interface ChatsListProps {}

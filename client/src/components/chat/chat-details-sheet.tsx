@@ -2,14 +2,14 @@ import { useActiveChatName } from "@/hooks/chats/use-active-chat-name";
 import { useActiveChatUser } from "@/hooks/chats/use-active-chat-user";
 import { useChatDetailsSheet } from "@/hooks/global/use-chat-details-sheet";
 import { Trash2, User } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import {
 	Sheet,
 	SheetContent,
 	SheetDescription,
 	SheetHeader,
 	SheetTitle,
-} from "../ui/sheet";
+} from "@/components/ui/sheet";
 
 interface ChatDetailsSheetProps {}
 

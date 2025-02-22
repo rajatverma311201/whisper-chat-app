@@ -1,5 +1,5 @@
 import { getNameInitials } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface GroupChatCardViewProps {
 	name: string;

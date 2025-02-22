@@ -1,10 +1,13 @@
 "use client";
+import { getCurrentUserKey } from "@/lib/keys";
 import { updateUserProfileDetails } from "@/services/api-users";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface MutationFnArgs extends Record<any, any> {}
 
 export const useUpdateProfile = () => {
+	const queryClient = useQueryClient();
+
 	const {
 		mutate: updateProfile,
 		isPending: isUpdatingProfile,
@@ -13,7 +16,9 @@ export const useUpdateProfile = () => {
 		mutationFn: (data: MutationFnArgs) => {
 			return updateUserProfileDetails(data);
 		},
-		onSuccess: () => {},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: getCurrentUserKey() });
+		},
 		onError: (error: Error) => {
 			console.error(error);
 		},
