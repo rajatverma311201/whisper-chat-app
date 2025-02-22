@@ -2,9 +2,9 @@
 import { getCurrentUserKey } from "@/lib/keys";
 import { updateUserProfileDetails } from "@/services/api-users";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface MutationFnArgs extends Record<any, any> {}
-
 export const useUpdateProfile = () => {
 	const queryClient = useQueryClient();
 
@@ -17,6 +17,7 @@ export const useUpdateProfile = () => {
 			return updateUserProfileDetails(data);
 		},
 		onSuccess: () => {
+			toast.success("Profile updated successfully");
 			queryClient.invalidateQueries({ queryKey: getCurrentUserKey() });
 		},
 		onError: (error: Error) => {

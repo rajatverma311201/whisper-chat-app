@@ -15,3 +15,11 @@ export const getNameInitials = (name: string) => {
 	}
 	return (vals[0].charAt(0) + vals[vals.length - 1].charAt(0)).toUpperCase();
 };
+
+export const getPersonalChatUser = (
+	chat: Record<any, any>,
+	currentUser: User,
+) => {
+	const users = [chat.user1, chat.user2];
+	return users.find((user) => user._id !== currentUser._id);
+};
