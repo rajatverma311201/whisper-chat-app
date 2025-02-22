@@ -17,6 +17,7 @@ export const useUpdateProfile = () => {
 			return updateUserProfileDetails(data);
 		},
 		onSuccess: () => {
+			toast.dismiss();
 			toast.success("Profile updated successfully");
 			queryClient.invalidateQueries({ queryKey: getCurrentUserKey() });
 		},

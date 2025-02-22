@@ -36,4 +36,5 @@ declare global {
 		passwordResetExpires: Date;
 		active: boolean;
 	}
+	type Nullable<T> = T | null;
 }
