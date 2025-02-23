@@ -48,12 +48,12 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({}) => {
 			socket.off(SocketConst.PERSONAL_CHAT_STOP_TYPING);
 		};
 	}, [activeChat, currentUser, socket]);
+
 	if (!activeChat) {
 		return null;
 	}
 
 	const chatUser = getPersonalChatUser(activeChat, currentUser!);
-	console.log(chatUser);
 	return (
 		<h1 className="flex items-center gap-2 p-5 font-medium text-primary">
 			<Avatar>

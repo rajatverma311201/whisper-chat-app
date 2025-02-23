@@ -19,6 +19,7 @@ export const useChatMessages = (chatId: string) => {
 		isFetching: isFetchingChatMessages,
 		error,
 	} = useQuery({
+		enabled: !!activeChat,
 		queryKey: activeChat?.isGroupChat
 			? getGroupChatMessagesKey(chatId)
 			: getPersonalChatMessagesKey(chatId),

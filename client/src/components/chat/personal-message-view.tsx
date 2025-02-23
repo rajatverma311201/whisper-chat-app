@@ -15,17 +15,17 @@ export const PersonalMessageView: React.FC<PersonalMessageViewProps> = ({
 
 	const isMyMessage = currentUser?._id === message.sender._id;
 
-	useEffect(() => {
-		if (isMyMessage) {
-			return;
-		}
+	// useEffect(() => {
+	// 	if (isMyMessage) {
+	// 		return;
+	// 	}
 
-		if (message.status === "read") {
-			return;
-		}
+	// 	if (message.status === "read") {
+	// 		return;
+	// 	}
 
-		updateMessageStatusToRead(message._id).then(() => {});
-	}, [isMyMessage, message]);
+	// 	updateMessageStatusToRead(message._id).then(() => {});
+	// }, [isMyMessage, message]);
 
 	return (
 		<div

@@ -15,6 +15,8 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import EmojiPicker from "emoji-picker-react";
 import useOutsideClick from "@/hooks/util/use-outside-click";
+import { getPersonalChatUser } from "@/lib/utils";
+import { useUnreadMessages } from "@/hooks/global/use-unread-messages";
 
 interface ChatFooterProps {}
 
@@ -36,17 +38,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({}) => {
 		resetTranscript,
 	} = useSpeechRecognition();
 
-	const queryClient = useQueryClient();
-	const { sendMessage } = useSendMessage({
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: activeChat?.isGroupChat
-					? getGroupChatMessagesKey(activeChat?.chat._id || "")
-					: getPersonalChatMessagesKey(activeChat?.chat._id || ""),
-			});
-			setMessage("");
-		},
-	});
+	const { onNewMsgReceived } = useUnreadMessages();
 
 	const emojiPickerRef = useOutsideClick<HTMLDivElement>(() => {
 		console.log("outside");
@@ -61,11 +53,42 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({}) => {
 			return;
 		}
 
-		sendMessage({
+		const chatUser = getPersonalChatUser(activeChat, currentUser!);
+
+		if (!chatUser) {
+			return;
+		}
+
+		console.log("chatId", chatId);
+		const trimmedMessage = message.trim();
+
+		if (!trimmedMessage) {
+			return;
+		}
+
+		socket.emit(SocketConst.PERSONAL_CHAT_MSG_SEND, {
 			chatId,
-			message: message.trim(),
+			msg: trimmedMessage,
+			receiverId: chatUser._id,
+			senderId: currentUser?._id,
 		});
 	};
+
+	// useEffect(() => {
+	// 	socket.on(SocketConst.PERSONAL_CHAT_MSG_RECEIVE, (data) => {
+	// 		console.log("msg", data);
+
+	// 		if (activeChat?.chat?._id != data.chatId)
+	// 			onNewMsgReceived({
+	// 				msg: data.msg,
+	// 				chatId: data.chatId,
+	// 			});
+	// 	});
+
+	// 	return () => {
+	// 		socket.off(SocketConst.PERSONAL_CHAT_MSG_RECEIVE);
+	// 	};
+	// }, [onNewMsgReceived, socket, activeChat]);
 
 	useEffect(() => {
 		return () => {

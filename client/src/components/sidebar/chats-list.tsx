@@ -4,6 +4,8 @@ import { useActiveChat } from "@/hooks/global/use-active-chat";
 import { getNameInitials } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { GroupChatsList } from "./group-chats-list";
+import { useUnreadMessages } from "@/hooks/global/use-unread-messages";
+import { Badge } from "../ui/badge";
 
 interface ChatsListProps {}
 
@@ -12,6 +14,8 @@ export const ChatsList: React.FC<ChatsListProps> = ({}) => {
 	const { currentUser } = useAuthUser();
 
 	const { setActiveChat } = useActiveChat();
+
+	const { getUnreadMessagesCount } = useUnreadMessages();
 
 	if (isLoadingPersonalChats) {
 		return <div>Loading...</div>;
@@ -25,6 +29,8 @@ export const ChatsList: React.FC<ChatsListProps> = ({}) => {
 						currentUser?._id == chat.user1._id
 							? [chat.user2.name, chat.user2._id]
 							: [chat.user1.name, chat.user1._id];
+
+					const unreadMessagesCnt = getUnreadMessagesCount(chat._id);
 
 					return (
 						<li
@@ -46,6 +52,11 @@ export const ChatsList: React.FC<ChatsListProps> = ({}) => {
 								{chatName}
 								{currentUser?._id == chatUserId ? " (You)" : ""}
 							</span>
+							{unreadMessagesCnt > 0 && (
+								<span>
+									<Badge>{unreadMessagesCnt}</Badge>
+								</span>
+							)}
 						</li>
 					);
 				})}
