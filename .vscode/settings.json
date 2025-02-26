@@ -1,0 +1,7 @@
+{
+	"files.associations": {
+		"*.html": "html",
+		"regex": "cpp",
+		"span": "cpp"
+	}
+}

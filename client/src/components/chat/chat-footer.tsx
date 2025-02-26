@@ -74,22 +74,6 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({}) => {
 		});
 	};
 
-	// useEffect(() => {
-	// 	socket.on(SocketConst.PERSONAL_CHAT_MSG_RECEIVE, (data) => {
-	// 		console.log("msg", data);
-
-	// 		if (activeChat?.chat?._id != data.chatId)
-	// 			onNewMsgReceived({
-	// 				msg: data.msg,
-	// 				chatId: data.chatId,
-	// 			});
-	// 	});
-
-	// 	return () => {
-	// 		socket.off(SocketConst.PERSONAL_CHAT_MSG_RECEIVE);
-	// 	};
-	// }, [onNewMsgReceived, socket, activeChat]);
-
 	useEffect(() => {
 		return () => {
 			if (timeoutRef.current) {
