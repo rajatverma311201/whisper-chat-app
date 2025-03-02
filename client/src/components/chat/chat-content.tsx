@@ -38,6 +38,8 @@ export const ChatContent: React.FC<ChatContentProps> = ({}) => {
 			console.log("msg CHAT CONTENT", { data });
 
 			if (activeChatId == data.chatId) {
+				clearUnreadMessages(activeChatId);
+
 				setChatMessagesState((msgs) => [...msgs, data.msg]);
 			} else {
 				onNewMsgReceived({
@@ -50,11 +52,21 @@ export const ChatContent: React.FC<ChatContentProps> = ({}) => {
 		return () => {
 			socket.off(SocketConst.PERSONAL_CHAT_MSG_RECEIVE);
 		};
-	}, [socket, activeChatId, onNewMsgReceived]);
+	}, [socket, activeChatId, onNewMsgReceived, clearUnreadMessages]);
 
 	useEffect(() => {
 		return () => {
 			clearUnreadMessages(activeChatId);
+		};
+	}, [activeChatId, clearUnreadMessages]);
+
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			clearUnreadMessages(activeChatId);
+		}, 1000);
+
+		return () => {
+			clearTimeout(timer);
 		};
 	}, [activeChatId, clearUnreadMessages]);
 
@@ -89,15 +101,19 @@ export const ChatContentSection: React.FC<ChatContentSectionProps> = ({
 	chatMessagesState,
 }) => {
 	const messagesEndRef = useRef<HTMLDivElement>(null);
+	const unreadMsgRef = useRef<HTMLHRElement>(null);
 
 	const { getUnreadMessages } = useUnreadMessages();
-
-	const scrollToBottom = () => {
-		messagesEndRef.current?.scrollIntoView();
-	};
-
 	const unreadMessages = getUnreadMessages(activeChatId);
+
 	useEffect(() => {
+		const scrollToBottom = () => {
+			if (unreadMessages) {
+				unreadMsgRef.current?.scrollIntoView();
+			} else {
+				messagesEndRef.current?.scrollIntoView();
+			}
+		};
 		scrollToBottom();
 	}, [unreadMessages, chatMessagesState]);
 
@@ -111,7 +127,7 @@ export const ChatContentSection: React.FC<ChatContentSectionProps> = ({
 				),
 			)}
 
-			{unreadMessages && <hr />}
+			{unreadMessages && <hr ref={unreadMsgRef} />}
 
 			{unreadMessages?.map((msg) =>
 				isGroupChat ? (

@@ -54,7 +54,9 @@ export const ChatsList: React.FC<ChatsListProps> = ({}) => {
 							</span>
 							{unreadMessagesCnt > 0 && (
 								<span>
-									<Badge>{unreadMessagesCnt}</Badge>
+									<Badge variant={"circular"}>
+										{unreadMessagesCnt}
+									</Badge>
 								</span>
 							)}
 						</li>
