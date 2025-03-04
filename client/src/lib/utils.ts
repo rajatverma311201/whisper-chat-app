@@ -17,10 +17,10 @@ export const getNameInitials = (name: string) => {
 };
 
 export const getPersonalChatUser = (
-	activeChat: { chat: Record<any, any>; isGroupChat: boolean },
+	activeChat: { chat: Record<any, any>; isGroupChat: boolean } | null,
 	currentUser: User,
 ): Nullable<User> => {
-	if (activeChat.isGroupChat) {
+	if (!activeChat || activeChat.isGroupChat) {
 		return null;
 	}
 

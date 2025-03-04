@@ -17,4 +17,7 @@ export const SocketConst = {
 		"personal-chat:accepted-incoming-call",
 	PERSONAL_CHAT_REJECT_INCOMING_CALL: "personal-chat:reject-incoming-call",
 	PERSONAL_CHAT_END_CALL: "personal-chat:end-call",
+	RECEIVE_ICE_CANDIDATE: "receive-ice-candidate",
+	SEND_ICE_CANDIDATE: "send-ice-candidate",
+	SEND_OFFER: "send-offer",
 };

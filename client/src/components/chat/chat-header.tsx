@@ -5,11 +5,11 @@ import { useChatDetailsSheet } from "@/hooks/global/use-chat-details-sheet";
 import { useSocket } from "@/hooks/global/use-socket";
 import { SocketConst } from "@/lib/constants";
 import { getPersonalChatUser } from "@/lib/utils";
-import { User, VideoIcon } from "lucide-react";
+import { Phone, PhoneOff, User, VideoIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
-import { VideoCall } from "./video-call";
+import { useRouter } from "next/navigation";
 
 interface ChatHeaderProps {}
 
@@ -20,7 +20,13 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({}) => {
 	const chatName = useActiveChatName();
 	const { socket } = useSocket();
 
+	const [incomingCall, setIncomingCall] = useState(false);
+
 	const [isTyping, setIsTyping] = useState(false);
+
+	const router = useRouter();
+
+	const chatUser = getPersonalChatUser(activeChat, currentUser!);
 
 	useEffect(() => {
 		if (!currentUser) {
@@ -54,29 +60,32 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({}) => {
 	useEffect(() => {
 		socket.on(SocketConst.PERSONAL_CHAT_INCOMING_CALL, (data) => {
 			console.log("INCOMING VIDEO CALL", data);
+			setIncomingCall(true);
 		});
 	}, [socket]);
 
 	const handleMakeVideoCall = () => {
-		if (!activeChat || activeChat?.isGroupChat) {
+		if (!chatUser || !activeChat || activeChat?.isGroupChat) {
 			return;
 		}
+
 		console.log("MAKE VIDEO CALL");
 
-		const chatUser = getPersonalChatUser(activeChat, currentUser!);
+		router.push(`/video-call/${chatUser?._id}`);
 
-		socket.emit(SocketConst.PERSONAL_CHAT_MAKE_CALL, {
-			makeCallTo: chatUser?._id,
-		});
+		// socket.emit(SocketConst.PERSONAL_CHAT_MAKE_CALL, {
+		// 	makeCallTo: chatUser?._id,
+		// });
 	};
 
+	const handleAcceptCall = () => {};
+	const handleRejectCall = () => {};
 	if (!activeChat) {
 		return null;
 	}
 
-	const chatUser = getPersonalChatUser(activeChat, currentUser!);
 	return (
-		<div className="flex">
+		<div className="relative flex">
 			<h1 className="flex flex-1 items-center gap-2 p-5 font-medium text-primary">
 				<Avatar>
 					<AvatarFallback>
@@ -102,12 +111,26 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({}) => {
 				>
 					<VideoIcon />
 				</Button>
-				<VideoCall
-					currentUserId={currentUser?._id || ""}
-					otherUserId={
-						getPersonalChatUser(activeChat, currentUser!)?._id || ""
-					}
-				/>
+				{incomingCall && (
+					<div className="animate-bounce-in absolute right-5 top-5 rounded-lg border bg-white px-5 py-2 [animation-fill-mode:forwards] [animation-iteration-count:2]">
+						<h2 className="text-center text-lg">Incoming Call</h2>
+						<div className="mt-5 flex gap-2">
+							<Button
+								onClick={handleAcceptCall}
+								// size={"icon"}
+							>
+								<Phone size={15} className="mr-2" /> Accept
+							</Button>
+							<Button
+								onClick={handleRejectCall}
+								variant={"destructive"}
+								// size={"icon"}
+							>
+								<PhoneOff size={15} className="mr-2" /> Reject
+							</Button>
+						</div>
+					</div>
+				)}
 			</div>
 		</div>
 	);
