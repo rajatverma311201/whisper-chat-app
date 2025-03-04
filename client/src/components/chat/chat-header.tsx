@@ -9,6 +9,7 @@ import { User, VideoIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
+import { VideoCall } from "./video-call";
 
 interface ChatHeaderProps {}
 
@@ -101,6 +102,12 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({}) => {
 				>
 					<VideoIcon />
 				</Button>
+				<VideoCall
+					currentUserId={currentUser?._id || ""}
+					otherUserId={
+						getPersonalChatUser(activeChat, currentUser!)?._id || ""
+					}
+				/>
 			</div>
 		</div>
 	);
