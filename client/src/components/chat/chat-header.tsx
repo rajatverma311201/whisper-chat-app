@@ -50,8 +50,23 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({}) => {
 		};
 	}, [activeChat, currentUser, socket]);
 
+	useEffect(() => {
+		socket.on(SocketConst.PERSONAL_CHAT_INCOMING_CALL, (data) => {
+			console.log("INCOMING VIDEO CALL", data);
+		});
+	}, [socket]);
+
 	const handleMakeVideoCall = () => {
+		if (!activeChat || activeChat?.isGroupChat) {
+			return;
+		}
 		console.log("MAKE VIDEO CALL");
+
+		const chatUser = getPersonalChatUser(activeChat, currentUser!);
+
+		socket.emit(SocketConst.PERSONAL_CHAT_MAKE_CALL, {
+			makeCallTo: chatUser?._id,
+		});
 	};
 
 	if (!activeChat) {

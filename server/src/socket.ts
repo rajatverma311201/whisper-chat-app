@@ -73,6 +73,17 @@ export const socketHandler = (appHttpServer: ExpressHttpServer) => {
 				data,
 			);
 		});
+
+		socket.on(SocketConst.PERSONAL_CHAT_MAKE_CALL, (data) => {
+			console.log("make-video-call", data);
+			const receiverSocketId = socketsAndUsers.getSocketId(
+				data.makeCallTo,
+			);
+			io.to(receiverSocketId).emit(
+				SocketConst.PERSONAL_CHAT_INCOMING_CALL,
+				data,
+			);
+		});
 	});
 };
 
@@ -83,6 +94,8 @@ const SocketConst = {
 	PERSONAL_CHAT_TYPING: "personal-chat:typing",
 
 	PERSONAL_CHAT_STOP_TYPING: "personal-chat:stop-typing",
+	PERSONAL_CHAT_MAKE_CALL: "personal-chat:make-call",
+	PERSONAL_CHAT_INCOMING_CALL: "personal-chat:incoming-call",
 };
 
 class Sockets {
