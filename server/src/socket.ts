@@ -91,6 +91,15 @@ export const socketHandler = (appHttpServer: ExpressHttpServer) => {
 				peerConnectionData: "data",
 			});
 		});
+
+		socket.on(SocketConst.PERSONAL_CHAT_REJECT_INCOMING_CALL, (data) => {
+			const { userId } = data;
+			console.log("reject-incoming-call", data);
+			const receiverSocketId = socketsAndUsers.getSocketId(userId);
+			io.to(receiverSocketId).emit(
+				SocketConst.PERSONAL_CHAT_REJECTED_INCOMING_CALL,
+			);
+		});
 	});
 };
 
@@ -108,6 +117,8 @@ const SocketConst = {
 	PERSONAL_CHAT_ACCEPTED_INCOMING_CALL:
 		"personal-chat:accepted-incoming-call",
 	PERSONAL_CHAT_REJECT_INCOMING_CALL: "personal-chat:reject-incoming-call",
+	PERSONAL_CHAT_REJECTED_INCOMING_CALL:
+		"personal-chat:rejected-incoming-call",
 	PERSONAL_CHAT_END_CALL: "personal-chat:end-call",
 };
 

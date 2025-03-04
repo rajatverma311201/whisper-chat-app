@@ -72,14 +72,21 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({}) => {
 		console.log("MAKE VIDEO CALL");
 
 		router.push(`/video-call/${chatUser?._id}`);
-
-		// socket.emit(SocketConst.PERSONAL_CHAT_MAKE_CALL, {
-		// 	makeCallTo: chatUser?._id,
-		// });
 	};
 
-	const handleAcceptCall = () => {};
-	const handleRejectCall = () => {};
+	const handleAcceptCall = () => {
+		router.push(`/video-call/${chatUser?._id}?action=accept`);
+	};
+
+	const handleRejectCall = () => {
+		console.log("REJECT");
+		socket.emit(SocketConst.PERSONAL_CHAT_REJECT_INCOMING_CALL, {
+			userId: chatUser?._id,
+		});
+
+		setIncomingCall(false);
+	};
+
 	if (!activeChat) {
 		return null;
 	}
