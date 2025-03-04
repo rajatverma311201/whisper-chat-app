@@ -29,11 +29,7 @@ export const ChatContent: React.FC<ChatContentProps> = ({}) => {
 
 	const { socket } = useSocket();
 
-	console.log("*********** HELLO *************");
-
 	useEffect(() => {
-		console.log("INSIDE CHAT CONETNT");
-
 		socket.on(SocketConst.PERSONAL_CHAT_MSG_RECEIVE, (data) => {
 			console.log("msg CHAT CONTENT", { data });
 

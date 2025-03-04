@@ -41,7 +41,6 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({}) => {
 	const { onNewMsgReceived } = useUnreadMessages();
 
 	const emojiPickerRef = useOutsideClick<HTMLDivElement>(() => {
-		console.log("outside");
 		setEmojiPickerOpen(false);
 	});
 
@@ -59,7 +58,6 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({}) => {
 			return;
 		}
 
-		console.log("chatId", chatId);
 		const trimmedMessage = message.trim();
 
 		if (!trimmedMessage) {
