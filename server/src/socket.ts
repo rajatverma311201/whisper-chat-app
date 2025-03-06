@@ -1,6 +1,28 @@
 import { Server as ExpressHttpServer } from "http";
 import { Socket, Server as SocketServer } from "socket.io";
 import { PersonalMessage } from "./models/personal-message-model";
+import crypto from "crypto";
+import { v4 as uuidv4 } from "uuid";
+
+function generateShortRoomId(userId1: string, userId2: string) {
+	// Sort user IDs for consistency
+	const sortedIds = [userId1.toString(), userId2.toString()].sort();
+
+	// Create a SHA-256 hash and encode it in Base64
+	const hash = crypto
+		.createHash("sha256")
+		.update(sortedIds.join("-"))
+		.digest("base64");
+
+	// Remove non-alphanumeric characters and shorten to 8 characters
+	const shortHash = hash.replace(/[^a-zA-Z0-9]/g, "").substring(0, 8);
+
+	// Generate a UUID and take only the first 8 characters
+	const shortUUID = uuidv4().replace(/-/g, "").substring(0, 8);
+
+	// Combine UUID and hash for a final short ID
+	return `${shortUUID}-${shortHash}`;
+}
 
 export const socketHandler = (appHttpServer: ExpressHttpServer) => {
 	const socketsAndUsers = new SocketsAndUsers();
@@ -46,8 +68,6 @@ export const socketHandler = (appHttpServer: ExpressHttpServer) => {
 			);
 
 			newMessage.save();
-
-			// io.emit(SocketConst.PERSONAL_CHAT_MSG_SEND, data);
 		});
 
 		socket.on(SocketConst.PERSONAL_CHAT_TYPING, (data) => {
@@ -79,6 +99,11 @@ export const socketHandler = (appHttpServer: ExpressHttpServer) => {
 			const receiverSocketId = socketsAndUsers.getSocketId(
 				data.makeCallTo,
 			);
+
+			const roomId = generateShortRoomId(data.makeCallTo, data.callerId);
+
+			socket.join(roomId);
+
 			io.to(receiverSocketId).emit(
 				SocketConst.PERSONAL_CHAT_INCOMING_CALL,
 				data,
@@ -86,7 +111,10 @@ export const socketHandler = (appHttpServer: ExpressHttpServer) => {
 		});
 
 		socket.on(SocketConst.PERSONAL_CHAT_ACCEPT_INCOMING_CALL, (data) => {
-			const { targetUserId } = data;
+			const { targetUserId, roomId } = data;
+
+			socket.join(roomId);
+
 			io.to(targetUserId).emit("call-accepted", {
 				peerConnectionData: "data",
 			});
