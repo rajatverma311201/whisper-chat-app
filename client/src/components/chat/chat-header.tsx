@@ -119,7 +119,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({}) => {
 					<VideoIcon />
 				</Button>
 				{incomingCall && (
-					<div className="animate-bounce-in absolute right-5 top-5 rounded-lg border bg-white px-5 py-2 [animation-fill-mode:forwards] [animation-iteration-count:2]">
+					<div className="absolute right-5 top-5 animate-bounce-in rounded-lg border bg-white px-5 py-2 [animation-fill-mode:forwards] [animation-iteration-count:2]">
 						<h2 className="text-center text-lg">Incoming Call</h2>
 						<div className="mt-5 flex gap-2">
 							<Button

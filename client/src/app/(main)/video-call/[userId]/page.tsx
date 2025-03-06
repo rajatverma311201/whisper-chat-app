@@ -18,7 +18,7 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 	searchParams,
 }) => {
 	const { userId } = params;
-	const { action } = searchParams;
+	const { action, roomId } = searchParams;
 
 	const { currentUser } = useAuthUser();
 	const { socket } = useSocket();
@@ -27,56 +27,19 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 	const [isCallActive, setIsCallActive] = useState<boolean>(false);
 
 	const mediaStreamRef = useRef<MediaStream | null>(null);
-	const userVideo = useRef<HTMLVideoElement | null>(null);
+	const userVideoRef = useRef<HTMLVideoElement | null>(null);
 	const partnerVideo = useRef<HTMLVideoElement | null>(null);
-	const peerConnection = useRef<RTCPeerConnection | null>(null);
+
+	const peerConnectionRef = useRef<RTCPeerConnection | null>(
+		new RTCPeerConnection({
+			iceServers: [{ urls: "stun:stun.l.google.com:19302" }], // Google STUN server
+		}),
+	);
 
 	const router = useRouter();
 
 	const otherUserId = userId;
 	const currentUserId = currentUser?._id;
-
-	const startCall = useCallback(
-		async (peerConnectionData: any) => {
-			peerConnection.current = new RTCPeerConnection({
-				iceServers: [
-					{
-						urls: "stun:stun.l.google.com:19302",
-					},
-				],
-			});
-
-			peerConnection.current.onicecandidate = (e) => {
-				if (e.candidate) {
-					socket.emit(SocketConst.SEND_ICE_CANDIDATE, {
-						candidate: e.candidate,
-						targetUserId: otherUserId,
-					});
-				}
-			};
-
-			peerConnection.current.ontrack = (event) => {
-				if (partnerVideo.current) {
-					partnerVideo.current.srcObject = event.streams[0];
-				}
-			};
-
-			const stream = userVideo.current?.srcObject as MediaStream;
-			stream?.getTracks().forEach((track) => {
-				peerConnection.current?.addTrack(track, stream);
-			});
-
-			const offer = await peerConnection.current.createOffer();
-
-			await peerConnection.current.setLocalDescription(offer);
-
-			socket.emit(SocketConst.SEND_OFFER, {
-				offer,
-				targetUserId: otherUserId,
-			});
-		},
-		[socket, otherUserId],
-	);
 
 	useEffect(() => {
 		socket.on(SocketConst.PERSONAL_CHAT_REJECTED_INCOMING_CALL, () => {
@@ -88,7 +51,7 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 			});
 			setTimeout(() => {
 				router.back();
-			}, 2000);
+			}, 1000);
 		});
 
 		return () => {
@@ -102,10 +65,16 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 				audio: true,
 				video: true,
 			});
+
 			mediaStreamRef.current = stream;
-			if (userVideo.current) {
-				userVideo.current.srcObject = stream;
+
+			if (userVideoRef.current) {
+				userVideoRef.current.srcObject = stream;
 			}
+
+			stream.getTracks().forEach((track) => {
+				peerConnectionRef.current?.addTrack(track, stream);
+			});
 		};
 		fn();
 
@@ -119,8 +88,31 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 		};
 	}, []);
 
-	const handleIceCandidate = (candidate: RTCIceCandidateInit) => {
-		peerConnection.current?.addIceCandidate(new RTCIceCandidate(candidate));
+	const makeCall = async () => {
+		if (!peerConnectionRef.current) {
+			return;
+		}
+		const offer = await peerConnectionRef.current?.createOffer();
+		await peerConnectionRef.current?.setLocalDescription(offer);
+
+		socket.emit(SocketConst.PERSONAL_CHAT_MAKE_CALL, {
+			makeCallTo: userId,
+			signalData: offer,
+			caller: currentUserId,
+		});
+
+		peerConnectionRef.current.addEventListener("track", (event) => {
+			userVideoRef.current!.srcObject = event.streams[0];
+		});
+
+		peerConnectionRef.current.addEventListener("icecandidate", (event) => {
+			if (event.candidate) {
+				socket.emit("sendICECandidate", {
+					to: otherUserId,
+					candidate: event.candidate,
+				});
+			}
+		});
 	};
 
 	const answerCall = () => {
@@ -144,7 +136,7 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 				{isReceivingCall && (
 					<button onClick={answerCall}>Answer Call</button>
 				)}
-				<video ref={userVideo} autoPlay muted />
+				<video ref={userVideoRef} autoPlay muted />
 				{isCallActive && (
 					<dialog open>
 						<video ref={partnerVideo} autoPlay />
@@ -200,6 +192,55 @@ navigator.mediaDevices
 				};
 			})
 			.catch((err) => console.log("Error accessing media devices:", err));
+
+
+
+*/
+
+/*
+
+
+	const startCall = useCallback(
+		async (peerConnectionData: any) => {
+			peerConnection.current = new RTCPeerConnection({
+				iceServers: [
+					{
+						urls: "stun:stun.l.google.com:19302",
+					},
+				],
+			});
+
+			peerConnection.current.onicecandidate = (e) => {
+				if (e.candidate) {
+					socket.emit(SocketConst.SEND_ICE_CANDIDATE, {
+						candidate: e.candidate,
+						targetUserId: otherUserId,
+					});
+				}
+			};
+
+			peerConnection.current.ontrack = (event) => {
+				if (partnerVideo.current) {
+					partnerVideo.current.srcObject = event.streams[0];
+				}
+			};
+
+			const stream = userVideo.current?.srcObject as MediaStream;
+			stream?.getTracks().forEach((track) => {
+				peerConnection.current?.addTrack(track, stream);
+			});
+
+			const offer = await peerConnection.current.createOffer();
+
+			await peerConnection.current.setLocalDescription(offer);
+
+			socket.emit(SocketConst.SEND_OFFER, {
+				offer,
+				targetUserId: otherUserId,
+			});
+		},
+		[socket, otherUserId],
+	);
 
 
 
