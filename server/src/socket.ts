@@ -4,32 +4,22 @@ import { PersonalMessage } from "./models/personal-message-model";
 import crypto from "crypto";
 import { v4 as uuidv4 } from "uuid";
 
-function generateShortRoomId(userId1: string, userId2: string) {
-	// Sort user IDs for consistency
+function generateShortRoomId(userId1: string, userId2: string): string {
 	const sortedIds = [userId1.toString(), userId2.toString()].sort();
-
-	// Create a SHA-256 hash and encode it in Base64
 	const hash = crypto
 		.createHash("sha256")
 		.update(sortedIds.join("-"))
 		.digest("base64");
-
-	// Remove non-alphanumeric characters and shorten to 8 characters
 	const shortHash = hash.replace(/[^a-zA-Z0-9]/g, "").substring(0, 8);
-
-	// Generate a UUID and take only the first 8 characters
 	const shortUUID = uuidv4().replace(/-/g, "").substring(0, 8);
-
-	// Combine UUID and hash for a final short ID
 	return `${shortUUID}-${shortHash}`;
 }
 
 export const socketHandler = (appHttpServer: ExpressHttpServer) => {
 	const socketsAndUsers = new SocketsAndUsers();
-
 	const io = new SocketServer(appHttpServer, {
 		cors: {
-			origin: "http://localhost:3000", // React app URL
+			origin: "http://localhost:3000",
 			methods: ["GET", "POST"],
 		},
 	});
@@ -39,94 +29,109 @@ export const socketHandler = (appHttpServer: ExpressHttpServer) => {
 
 		socket.on("init", (userId: string) => {
 			socketsAndUsers.registerUser(socket.id, userId);
-			console.log("init", userId);
+			console.log("User initialized", userId);
 		});
 
 		socket.on("disconnect", () => {
-			console.log("Client disconnected");
+			console.log("Client disconnected", socket.id);
 			socketsAndUsers.removeUser(socket.id);
 		});
 
-		socket.on(SocketConst.PERSONAL_CHAT_MSG_SEND, (data) => {
-			console.log("msg", data);
-			const receiverSocketId = socketsAndUsers.getSocketId(
-				data.receiverId,
-			);
-			console.log("receiverSocketId", receiverSocketId);
+		socket.on(SocketConst.PERSONAL_CHAT_MSG_SEND, async (data) => {
+			try {
+				const receiverSocketId = socketsAndUsers.getSocketId(
+					data.receiverId,
+				);
+				if (!receiverSocketId) return;
 
-			const newMessage = new PersonalMessage({
-				chat: data.chatId,
-				sender: data.senderId,
-				content: data.msg,
-			});
+				const newMessage = new PersonalMessage({
+					chat: data.chatId,
+					sender: data.senderId,
+					content: data.msg,
+				});
 
-			console.log("newMessage", { newMessage });
-
-			io.to(receiverSocketId).emit(
-				SocketConst.PERSONAL_CHAT_MSG_RECEIVE,
-				{ ...data, msg: newMessage },
-			);
-
-			newMessage.save();
+				await newMessage.save();
+				io.to(receiverSocketId).emit(
+					SocketConst.PERSONAL_CHAT_MSG_RECEIVE,
+					{
+						...data,
+						msg: newMessage,
+					},
+				);
+			} catch (error) {
+				console.error("Error sending message:", error);
+			}
 		});
 
 		socket.on(SocketConst.PERSONAL_CHAT_TYPING, (data) => {
-			console.log("typing", data);
-
 			const receiverSocketId = socketsAndUsers.getSocketId(
 				data.receiverId,
 			);
-
-			io.to(receiverSocketId).emit(
-				SocketConst.PERSONAL_CHAT_TYPING,
-				data,
-			);
+			if (receiverSocketId) {
+				io.to(receiverSocketId).emit(
+					SocketConst.PERSONAL_CHAT_TYPING,
+					data,
+				);
+			}
 		});
 
 		socket.on(SocketConst.PERSONAL_CHAT_STOP_TYPING, (data) => {
-			console.log("typing-stop", data);
 			const receiverSocketId = socketsAndUsers.getSocketId(
 				data.receiverId,
 			);
-			io.to(receiverSocketId).emit(
-				SocketConst.PERSONAL_CHAT_STOP_TYPING,
-				data,
-			);
+			if (receiverSocketId) {
+				io.to(receiverSocketId).emit(
+					SocketConst.PERSONAL_CHAT_STOP_TYPING,
+					data,
+				);
+			}
 		});
 
 		socket.on(SocketConst.PERSONAL_CHAT_MAKE_CALL, (data) => {
-			console.log("make-video-call", data);
-			const receiverSocketId = socketsAndUsers.getSocketId(
-				data.makeCallTo,
-			);
-
-			const roomId = generateShortRoomId(data.makeCallTo, data.callerId);
-
-			socket.join(roomId);
-
-			io.to(receiverSocketId).emit(
-				SocketConst.PERSONAL_CHAT_INCOMING_CALL,
-				data,
-			);
+			const { makeCallTo, signalData, caller } = data;
+			const receiverSocketId = socketsAndUsers.getSocketId(makeCallTo);
+			if (receiverSocketId) {
+				const roomId = generateShortRoomId(caller, makeCallTo);
+				io.to(receiverSocketId).emit(
+					SocketConst.PERSONAL_CHAT_INCOMING_CALL,
+					{
+						caller,
+						signalData,
+						roomId,
+					},
+				);
+			}
 		});
 
 		socket.on(SocketConst.PERSONAL_CHAT_ACCEPT_INCOMING_CALL, (data) => {
-			const { targetUserId, roomId } = data;
-
-			socket.join(roomId);
-
-			io.to(targetUserId).emit("call-accepted", {
-				peerConnectionData: "data",
-			});
+			const { targetUserId, signal } = data;
+			const targetSocketId = socketsAndUsers.getSocketId(targetUserId);
+			if (targetSocketId) {
+				io.to(targetSocketId).emit(
+					SocketConst.PERSONAL_CHAT_ACCEPTED_INCOMING_CALL,
+					{ signal },
+				);
+			}
 		});
 
 		socket.on(SocketConst.PERSONAL_CHAT_REJECT_INCOMING_CALL, (data) => {
 			const { userId } = data;
-			console.log("reject-incoming-call", data);
 			const receiverSocketId = socketsAndUsers.getSocketId(userId);
-			io.to(receiverSocketId).emit(
-				SocketConst.PERSONAL_CHAT_REJECTED_INCOMING_CALL,
-			);
+			if (receiverSocketId) {
+				io.to(receiverSocketId).emit(
+					SocketConst.PERSONAL_CHAT_REJECTED_INCOMING_CALL,
+				);
+			}
+		});
+
+		socket.on("sendICECandidate", (data) => {
+			const { to, candidate } = data;
+			const receiverSocketId = socketsAndUsers.getSocketId(to);
+			if (receiverSocketId) {
+				io.to(receiverSocketId).emit("receiveICECandidate", {
+					candidate,
+				});
+			}
 		});
 	});
 };
@@ -134,13 +139,10 @@ export const socketHandler = (appHttpServer: ExpressHttpServer) => {
 const SocketConst = {
 	PERSONAL_CHAT_MSG_SEND: "personal-chat:msg-send",
 	PERSONAL_CHAT_MSG_RECEIVE: "personal-chat:msg-receive",
-
 	PERSONAL_CHAT_TYPING: "personal-chat:typing",
-
 	PERSONAL_CHAT_STOP_TYPING: "personal-chat:stop-typing",
 	PERSONAL_CHAT_MAKE_CALL: "personal-chat:make-call",
 	PERSONAL_CHAT_INCOMING_CALL: "personal-chat:incoming-call",
-
 	PERSONAL_CHAT_ACCEPT_INCOMING_CALL: "personal-chat:accept-incoming-call",
 	PERSONAL_CHAT_ACCEPTED_INCOMING_CALL:
 		"personal-chat:accepted-incoming-call",
@@ -149,16 +151,6 @@ const SocketConst = {
 		"personal-chat:rejected-incoming-call",
 	PERSONAL_CHAT_END_CALL: "personal-chat:end-call",
 };
-
-class Sockets {
-	private socketIdToUserIdMap: Map<string, string>;
-	private userIdToSocketIdMap: Map<string, string>;
-
-	constructor() {
-		this.socketIdToUserIdMap = new Map<string, string>();
-		this.userIdToSocketIdMap = new Map<string, string>();
-	}
-}
 
 class SocketsAndUsers {
 	private socketIdToUserIdMap: Map<string, string>;
@@ -169,13 +161,11 @@ class SocketsAndUsers {
 		this.userIdToSocketIdMap = new Map<string, string>();
 	}
 
-	// Register a user with their socket ID
 	public registerUser(socketId: string, userId: string): void {
 		this.socketIdToUserIdMap.set(socketId, userId);
 		this.userIdToSocketIdMap.set(userId, socketId);
 	}
 
-	// Remove a user when they disconnect
 	public removeUser(socketId: string): void {
 		const userId = this.socketIdToUserIdMap.get(socketId);
 		if (userId) {
@@ -184,28 +174,7 @@ class SocketsAndUsers {
 		}
 	}
 
-	// Get user ID from socket ID
-	public getUserId(socketId: string): string | undefined {
-		return this.socketIdToUserIdMap.get(socketId);
-	}
-
-	// Get socket ID from user ID
 	public getSocketId(userId: string): string | undefined {
 		return this.userIdToSocketIdMap.get(userId);
-	}
-
-	// Check if a user is online
-	public isUserOnline(userId: string): boolean {
-		return this.userIdToSocketIdMap.has(userId);
-	}
-
-	// Get all online users
-	public getOnlineUsers(): string[] {
-		return Array.from(this.userIdToSocketIdMap.keys());
-	}
-
-	// Get total number of connected users
-	public getConnectedCount(): number {
-		return this.socketIdToUserIdMap.size;
 	}
 }

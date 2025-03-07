@@ -2,14 +2,25 @@
 import { useAuthUser } from "@/hooks/auth/use-auth-user";
 import { useSocket } from "@/hooks/global/use-socket";
 import { SocketConst } from "@/lib/constants";
+import { error } from "console";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+const iceServers = [
+	{ urls: "stun:stun.l.google.com:19302" },
+	{ urls: "stun:stun.l.google.com:5349" },
+	{ urls: "stun:stun1.l.google.com:3478" },
+	{ urls: "stun:stun1.l.google.com:5349" },
+	{ urls: "stun:stun2.l.google.com:19302" },
+	{ urls: "stun:stun2.l.google.com:5349" },
+	{ urls: "stun:stun3.l.google.com:3478" },
+	{ urls: "stun:stun3.l.google.com:5349" },
+	{ urls: "stun:stun4.l.google.com:19302" },
+	{ urls: "stun:stun4.l.google.com:5349" },
+];
 interface VideoCallPageProps {
-	params: {
-		userId: string;
-	};
+	params: { userId: string };
 	searchParams: Record<string, string>;
 }
 
@@ -22,226 +33,220 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 
 	const { currentUser } = useAuthUser();
 	const { socket } = useSocket();
-
-	const [isReceivingCall, setIsReceivingCall] = useState<boolean>(false);
-	const [isCallActive, setIsCallActive] = useState<boolean>(false);
-
-	const mediaStreamRef = useRef<MediaStream | null>(null);
-	const userVideoRef = useRef<HTMLVideoElement | null>(null);
-	const partnerVideo = useRef<HTMLVideoElement | null>(null);
-
-	const peerConnectionRef = useRef<RTCPeerConnection | null>(
-		new RTCPeerConnection({
-			iceServers: [{ urls: "stun:stun.l.google.com:19302" }], // Google STUN server
-		}),
-	);
-
 	const router = useRouter();
 
-	const otherUserId = userId;
-	const currentUserId = currentUser?._id;
+	const [isReceivingCall, setIsReceivingCall] = useState(false);
+	const [isCallActive, setIsCallActive] = useState(false);
+	const [callerSignal, setCallerSignal] = useState<any>(null);
 
-	useEffect(() => {
-		socket.on(SocketConst.PERSONAL_CHAT_REJECTED_INCOMING_CALL, () => {
-			toast.error("Call rejected by the receiver");
-			const tracks = mediaStreamRef.current?.getTracks();
-			tracks?.forEach((track) => {
-				track.stop();
-				console.log(track);
-			});
-			setTimeout(() => {
-				router.back();
-			}, 1000);
+	const userVideoRef = useRef<HTMLVideoElement | null>(null);
+	const partnerVideoRef = useRef<HTMLVideoElement | null>(null);
+	const mediaStreamRef = useRef<MediaStream | null>(null);
+	const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+
+	const initializePeerConnection = useCallback(() => {
+		peerConnectionRef.current = new RTCPeerConnection({
+			iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 		});
 
-		return () => {
-			socket.off(SocketConst.PERSONAL_CHAT_REJECTED_INCOMING_CALL);
-		};
-	}, [socket, router]);
+		window.peerConnectionRef = peerConnectionRef;
 
-	useEffect(() => {
-		const fn = async () => {
-			const stream = await navigator.mediaDevices.getUserMedia({
-				audio: true,
-				video: true,
-			});
+		peerConnectionRef.current.addEventListener(
+			"icecandidateerror",
+			(event) => {
+				console.log("ICE CANDIDATE ERROR = ", event);
+			},
+		);
 
-			mediaStreamRef.current = stream;
-
-			if (userVideoRef.current) {
-				userVideoRef.current.srcObject = stream;
-			}
-
-			stream.getTracks().forEach((track) => {
-				peerConnectionRef.current?.addTrack(track, stream);
-			});
-		};
-		fn();
-
-		return () => {
-			const tracks = mediaStreamRef.current?.getTracks();
-			tracks?.forEach((track) => {
-				track.stop();
-				console.log(track);
-			});
-			mediaStreamRef.current = null;
-		};
-	}, []);
-
-	const makeCall = async () => {
-		if (!peerConnectionRef.current) {
-			return;
-		}
-		const offer = await peerConnectionRef.current?.createOffer();
-		await peerConnectionRef.current?.setLocalDescription(offer);
-
-		socket.emit(SocketConst.PERSONAL_CHAT_MAKE_CALL, {
-			makeCallTo: userId,
-			signalData: offer,
-			caller: currentUserId,
+		peerConnectionRef.current.addEventListener(
+			"negotiationneeded",
+			(event) => {
+				console.log("negotiation = ", event);
+			},
+		);
+		peerConnectionRef.current.addEventListener("datachannel", (event) => {
+			console.log("datachannel = ", event);
 		});
-
-		peerConnectionRef.current.addEventListener("track", (event) => {
-			userVideoRef.current!.srcObject = event.streams[0];
-		});
+		peerConnectionRef.current.addEventListener(
+			"connectionstatechange",
+			(event) => {
+				console.log("connectionstatechange = ", event);
+			},
+		);
+		peerConnectionRef.current.addEventListener(
+			"iceconnectionstatechange",
+			(event) => {
+				console.log("iceconnectionstatechange = ", event);
+			},
+		);
+		peerConnectionRef.current.addEventListener(
+			"icegatheringstatechange",
+			(event) => {
+				console.log("icegatheringstatechange = ", event);
+			},
+		);
 
 		peerConnectionRef.current.addEventListener("icecandidate", (event) => {
+			console.log("HELLO");
 			if (event.candidate) {
 				socket.emit("sendICECandidate", {
-					to: otherUserId,
+					to: userId,
 					candidate: event.candidate,
 				});
 			}
 		});
+
+		peerConnectionRef.current.addEventListener("track", (event) => {
+			if (partnerVideoRef.current) {
+				partnerVideoRef.current.srcObject = event.streams[0];
+			}
+		});
+
+		makeCall();
+	}, [socket, userId]);
+
+	useEffect(() => {
+		const setupMedia = async () => {
+			try {
+				const stream = await navigator.mediaDevices.getUserMedia({
+					audio: true,
+					video: true,
+				});
+				mediaStreamRef.current = stream;
+				if (userVideoRef.current)
+					userVideoRef.current.srcObject = stream;
+				initializePeerConnection();
+
+				stream
+					.getTracks()
+					.forEach((track) =>
+						peerConnectionRef.current?.addTrack(track, stream),
+					);
+			} catch (error) {
+				console.error("Error accessing media devices:", error);
+				toast.error("Failed to access camera/microphone");
+			}
+		};
+
+		setupMedia();
+
+		return () => cleanup();
+	}, [initializePeerConnection]);
+
+	const cleanup = () => {
+		mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+		peerConnectionRef.current?.close();
+		mediaStreamRef.current = null;
+		peerConnectionRef.current = null;
 	};
 
-	const answerCall = () => {
+	const makeCall = useCallback(async () => {
+		if (!peerConnectionRef.current) return;
+		console.log("MAKE CALL");
+		const offer = await peerConnectionRef.current.createOffer();
+		await peerConnectionRef.current.setLocalDescription(offer);
+		socket.emit(SocketConst.PERSONAL_CHAT_MAKE_CALL, {
+			makeCallTo: userId,
+			signalData: offer,
+			caller: currentUser?._id,
+		});
+	}, [currentUser?._id, userId, socket]);
+
+	const answerCall = useCallback(async () => {
+		if (!peerConnectionRef.current || !callerSignal) return;
+		await peerConnectionRef.current.setRemoteDescription(
+			new RTCSessionDescription(callerSignal),
+		);
+		const answer = await peerConnectionRef.current.createAnswer();
+		await peerConnectionRef.current.setLocalDescription(answer);
 		socket.emit(SocketConst.PERSONAL_CHAT_ACCEPT_INCOMING_CALL, {
-			targetUserId: otherUserId,
+			targetUserId: userId,
+			signal: answer,
 		});
 		setIsCallActive(true);
+	}, [callerSignal, socket, userId]);
+
+	const endCall = () => {
+		socket.emit(SocketConst.PERSONAL_CHAT_END_CALL, { to: userId });
+		cleanup();
+		router.back();
 	};
 
 	useEffect(() => {
-		socket.emit(SocketConst.PERSONAL_CHAT_MAKE_CALL, {
-			makeCallTo: userId,
+		socket.on(SocketConst.PERSONAL_CHAT_INCOMING_CALL, (data) => {
+			setIsReceivingCall(true);
+			setCallerSignal(data.signalData);
 		});
-	}, [socket, userId]);
+
+		socket.on(
+			SocketConst.PERSONAL_CHAT_ACCEPTED_INCOMING_CALL,
+			async (data) => {
+				if (peerConnectionRef.current) {
+					await peerConnectionRef.current.setRemoteDescription(
+						new RTCSessionDescription(data.signal),
+					);
+					setIsCallActive(true);
+				}
+			},
+		);
+
+		socket.on(SocketConst.PERSONAL_CHAT_REJECTED_INCOMING_CALL, () => {
+			toast.error("Call rejected by the receiver");
+			cleanup();
+			router.back();
+		});
+
+		socket.on("receiveICECandidate", async (data) => {
+			if (peerConnectionRef.current && data.candidate) {
+				await peerConnectionRef.current.addIceCandidate(
+					new RTCIceCandidate(data.candidate),
+				);
+			}
+		});
+
+		socket.on(SocketConst.PERSONAL_CHAT_END_CALL, () => {
+			cleanup();
+			router.back();
+		});
+
+		if (action === "accept" && callerSignal) answerCall();
+		else if (!action) makeCall();
+
+		return () => {
+			socket.off(SocketConst.PERSONAL_CHAT_INCOMING_CALL);
+			socket.off(SocketConst.PERSONAL_CHAT_ACCEPTED_INCOMING_CALL);
+			socket.off(SocketConst.PERSONAL_CHAT_REJECTED_INCOMING_CALL);
+			socket.off("receiveICECandidate");
+			socket.off(SocketConst.PERSONAL_CHAT_END_CALL);
+		};
+	}, [socket, action, callerSignal, answerCall, makeCall, router]);
 
 	return (
-		<>
-			<h1>VideoCallPage</h1>
+		<div>
+			<h1>Video Call</h1>
 			<div>
-				<h2>Video Call</h2>
-				{isReceivingCall && (
-					<button onClick={answerCall}>Answer Call</button>
-				)}
-				<video ref={userVideoRef} autoPlay muted />
+				<video
+					ref={userVideoRef}
+					autoPlay
+					muted
+					playsInline
+					style={{ width: "300px" }}
+				/>
 				{isCallActive && (
-					<dialog open>
-						<video ref={partnerVideo} autoPlay />
-					</dialog>
+					<video
+						ref={partnerVideoRef}
+						autoPlay
+						playsInline
+						style={{ width: "300px" }}
+					/>
 				)}
 			</div>
-		</>
+			{isReceivingCall && !isCallActive && (
+				<button onClick={answerCall}>Answer Call</button>
+			)}
+			{isCallActive && <button onClick={endCall}>End Call</button>}
+		</div>
 	);
 };
+
 export default VideoCallPage;
-
-/*
-
-
-navigator.mediaDevices
-			.getUserMedia({ video: true, audio: true })
-			.then((stream) => {
-				if (userVideo.current) {
-					userVideo.current.srcObject = stream;
-				}
-
-				socket.emit("join-call", currentUserId);
-
-				// Listen for incoming call
-				socket.on(
-					SocketConst.PERSONAL_CHAT_INCOMING_CALL,
-					(callerId: string) => {
-						setIsReceivingCall(true);
-					},
-				);
-
-				// Listen for when the other user accepts the call
-				socket.on(
-					SocketConst.PERSONAL_CHAT_ACCEPTED_INCOMING_CALL,
-					(peerConnectionData: any) => {
-						setIsCallActive(true);
-						startCall(peerConnectionData);
-					},
-				);
-
-				// Handle receiving ICE candidates
-				socket.on(
-					SocketConst.RECEIVE_ICE_CANDIDATE,
-					handleIceCandidate,
-				);
-
-				return () => {
-					socket.off(SocketConst.PERSONAL_CHAT_INCOMING_CALL);
-					socket.off(
-						SocketConst.PERSONAL_CHAT_ACCEPTED_INCOMING_CALL,
-					);
-					socket.off(SocketConst.RECEIVE_ICE_CANDIDATE);
-				};
-			})
-			.catch((err) => console.log("Error accessing media devices:", err));
-
-
-
-*/
-
-/*
-
-
-	const startCall = useCallback(
-		async (peerConnectionData: any) => {
-			peerConnection.current = new RTCPeerConnection({
-				iceServers: [
-					{
-						urls: "stun:stun.l.google.com:19302",
-					},
-				],
-			});
-
-			peerConnection.current.onicecandidate = (e) => {
-				if (e.candidate) {
-					socket.emit(SocketConst.SEND_ICE_CANDIDATE, {
-						candidate: e.candidate,
-						targetUserId: otherUserId,
-					});
-				}
-			};
-
-			peerConnection.current.ontrack = (event) => {
-				if (partnerVideo.current) {
-					partnerVideo.current.srcObject = event.streams[0];
-				}
-			};
-
-			const stream = userVideo.current?.srcObject as MediaStream;
-			stream?.getTracks().forEach((track) => {
-				peerConnection.current?.addTrack(track, stream);
-			});
-
-			const offer = await peerConnection.current.createOffer();
-
-			await peerConnection.current.setLocalDescription(offer);
-
-			socket.emit(SocketConst.SEND_OFFER, {
-				offer,
-				targetUserId: otherUserId,
-			});
-		},
-		[socket, otherUserId],
-	);
-
-
-
-*/

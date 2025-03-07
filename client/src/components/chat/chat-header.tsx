@@ -7,89 +7,71 @@ import { SocketConst } from "@/lib/constants";
 import { getPersonalChatUser } from "@/lib/utils";
 import { Phone, PhoneOff, User, VideoIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Button } from "../ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
-interface ChatHeaderProps {}
-
-export const ChatHeader: React.FC<ChatHeaderProps> = ({}) => {
+export const ChatHeader: React.FC = () => {
 	const { activeChat } = useActiveChat();
 	const { currentUser } = useAuthUser();
 	const { setOpen, open } = useChatDetailsSheet();
 	const chatName = useActiveChatName();
 	const { socket } = useSocket();
+	const router = useRouter();
 
 	const [incomingCall, setIncomingCall] = useState(false);
-
 	const [isTyping, setIsTyping] = useState(false);
-
-	const router = useRouter();
+	const [callLoading, setCallLoading] = useState(false);
 
 	const chatUser = getPersonalChatUser(activeChat, currentUser!);
 
 	useEffect(() => {
-		if (!currentUser) {
-			return;
-		}
-		if (!activeChat) {
-			return;
-		}
-		if (activeChat?.isGroupChat) {
-			return;
-		}
+		if (!currentUser || !activeChat || activeChat?.isGroupChat) return;
 
-		socket.on(SocketConst.PERSONAL_CHAT_TYPING, (data) => {
-			if (data.chatId == activeChat.chat._id) {
-				setIsTyping(true);
-			}
-		});
+		const handleTyping = (data: any) => {
+			if (data.chatId === activeChat.chat._id) setIsTyping(true);
+		};
+		const handleStopTyping = (data: any) => {
+			if (data.chatId === activeChat.chat._id) setIsTyping(false);
+		};
+		const handleIncomingCall = (data: any) => {
+			setIncomingCall(true);
+		};
 
-		socket.on(SocketConst.PERSONAL_CHAT_STOP_TYPING, (data) => {
-			if (data.chatId == activeChat.chat._id) {
-				setIsTyping(false);
-			}
-		});
+		socket.on(SocketConst.PERSONAL_CHAT_TYPING, handleTyping);
+		socket.on(SocketConst.PERSONAL_CHAT_STOP_TYPING, handleStopTyping);
+		socket.on(SocketConst.PERSONAL_CHAT_INCOMING_CALL, handleIncomingCall);
 
 		return () => {
-			socket.off(SocketConst.PERSONAL_CHAT_TYPING);
-			socket.off(SocketConst.PERSONAL_CHAT_STOP_TYPING);
+			socket.off(SocketConst.PERSONAL_CHAT_TYPING, handleTyping);
+			socket.off(SocketConst.PERSONAL_CHAT_STOP_TYPING, handleStopTyping);
+			socket.off(
+				SocketConst.PERSONAL_CHAT_INCOMING_CALL,
+				handleIncomingCall,
+			);
 		};
 	}, [activeChat, currentUser, socket]);
 
-	useEffect(() => {
-		socket.on(SocketConst.PERSONAL_CHAT_INCOMING_CALL, (data) => {
-			console.log("INCOMING VIDEO CALL", data);
-			setIncomingCall(true);
-		});
-	}, [socket]);
-
 	const handleMakeVideoCall = () => {
-		if (!chatUser || !activeChat || activeChat?.isGroupChat) {
-			return;
-		}
-
-		console.log("MAKE VIDEO CALL");
-
+		if (!chatUser || !activeChat || activeChat?.isGroupChat) return;
+		setCallLoading(true);
 		router.push(`/video-call/${chatUser?._id}`);
 	};
 
 	const handleAcceptCall = () => {
+		if (!chatUser) return;
+		setCallLoading(true);
 		router.push(`/video-call/${chatUser?._id}?action=accept`);
 	};
 
 	const handleRejectCall = () => {
-		console.log("REJECT");
 		socket.emit(SocketConst.PERSONAL_CHAT_REJECT_INCOMING_CALL, {
 			userId: chatUser?._id,
 		});
-
 		setIncomingCall(false);
 	};
 
-	if (!activeChat) {
-		return null;
-	}
+	if (!activeChat) return null;
 
 	return (
 		<div className="relative flex">
@@ -104,7 +86,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({}) => {
 					</AvatarFallback>
 					<AvatarImage src={chatUser?.photo} />
 				</Avatar>
-				{activeChat ? chatName : "ChatHeader"}
+				{chatName}
 				{isTyping && (
 					<span className="ml-5 text-primary/75">Typing...</span>
 				)}
@@ -115,23 +97,24 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({}) => {
 					variant={"outline"}
 					className="text-primary"
 					onClick={handleMakeVideoCall}
+					disabled={callLoading}
 				>
 					<VideoIcon />
 				</Button>
 				{incomingCall && (
-					<div className="absolute right-5 top-5 animate-bounce-in rounded-lg border bg-white px-5 py-2 [animation-fill-mode:forwards] [animation-iteration-count:2]">
+					<div className="absolute right-5 top-5 animate-bounce-in rounded-lg border bg-white px-5 py-2">
 						<h2 className="text-center text-lg">Incoming Call</h2>
 						<div className="mt-5 flex gap-2">
 							<Button
 								onClick={handleAcceptCall}
-								// size={"icon"}
+								disabled={callLoading}
 							>
 								<Phone size={15} className="mr-2" /> Accept
 							</Button>
 							<Button
 								onClick={handleRejectCall}
 								variant={"destructive"}
-								// size={"icon"}
+								disabled={callLoading}
 							>
 								<PhoneOff size={15} className="mr-2" /> Reject
 							</Button>
