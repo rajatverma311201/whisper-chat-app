@@ -88,7 +88,7 @@ export const socketHandler = (appHttpServer: ExpressHttpServer) => {
 		});
 
 		socket.on(SocketConst.PERSONAL_CHAT_MAKE_CALL, (data) => {
-			const { makeCallTo, signalData, caller } = data;
+			const { makeCallTo, callerSignal, caller } = data;
 			const receiverSocketId = socketsAndUsers.getSocketId(makeCallTo);
 			if (receiverSocketId) {
 				const roomId = generateShortRoomId(caller, makeCallTo);
@@ -96,7 +96,7 @@ export const socketHandler = (appHttpServer: ExpressHttpServer) => {
 					SocketConst.PERSONAL_CHAT_INCOMING_CALL,
 					{
 						caller,
-						signalData,
+						callerSignal,
 						roomId,
 					},
 				);
@@ -124,13 +124,26 @@ export const socketHandler = (appHttpServer: ExpressHttpServer) => {
 			}
 		});
 
-		socket.on("sendICECandidate", (data) => {
+		socket.on(SocketConst.PERSONAL_CHAT_END_CALL, (data) => {
+			const { userId } = data;
+			const receiverSocketId = socketsAndUsers.getSocketId(userId);
+			if (receiverSocketId) {
+				io.to(receiverSocketId).emit(
+					SocketConst.PERSONAL_CHAT_END_CALL,
+				);
+			}
+		});
+
+		socket.on(SocketConst.SEND_ICE_CANDIDATE, (data) => {
 			const { to, candidate } = data;
 			const receiverSocketId = socketsAndUsers.getSocketId(to);
 			if (receiverSocketId) {
-				io.to(receiverSocketId).emit("receiveICECandidate", {
-					candidate,
-				});
+				io.to(receiverSocketId).emit(
+					SocketConst.RECEIVE_ICE_CANDIDATE,
+					{
+						candidate,
+					},
+				);
 			}
 		});
 	});
@@ -150,6 +163,8 @@ const SocketConst = {
 	PERSONAL_CHAT_REJECTED_INCOMING_CALL:
 		"personal-chat:rejected-incoming-call",
 	PERSONAL_CHAT_END_CALL: "personal-chat:end-call",
+	RECEIVE_ICE_CANDIDATE: "receive-ice-candidate",
+	SEND_ICE_CANDIDATE: "send-ice-candidate",
 };
 
 class SocketsAndUsers {
