@@ -21,6 +21,8 @@ const buttonVariants = cva(
 				link: "text-primary underline-offset-4 hover:underline",
 				outlineDestructive:
 					"text-red-500 border-red-500 border hover:bg-red-500 hover:text-white",
+				videoControl:
+					"bg-zinc-600 text-gray-100 rounded-sm hover:bg-zinc-700/75",
 			},
 			size: {
 				default: "h-9 px-4 py-2",
@@ -28,6 +30,7 @@ const buttonVariants = cva(
 				lg: "h-10 rounded-md px-8",
 				icon: "h-10 w-10",
 				iconRound: "h-10 w-10 rounded-full",
+				videoControl: "h-12 w-12",
 			},
 		},
 		defaultVariants: {

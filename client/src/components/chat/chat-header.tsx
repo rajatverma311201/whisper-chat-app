@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { useVideoCallStore } from "@/hooks/global/use-video-call-store";
 
 export const ChatHeader: React.FC = () => {
 	const { activeChat } = useActiveChat();
@@ -22,6 +23,7 @@ export const ChatHeader: React.FC = () => {
 	const [incomingCall, setIncomingCall] = useState(false);
 	const [isTyping, setIsTyping] = useState(false);
 	const [callLoading, setCallLoading] = useState(false);
+	const { setCallerSignal } = useVideoCallStore();
 
 	const chatUser = getPersonalChatUser(activeChat, currentUser!);
 
@@ -35,6 +37,7 @@ export const ChatHeader: React.FC = () => {
 			if (data.chatId === activeChat.chat._id) setIsTyping(false);
 		};
 		const handleIncomingCall = (data: any) => {
+			setCallerSignal(data.callerSignal);
 			setIncomingCall(true);
 		};
 
@@ -50,11 +53,12 @@ export const ChatHeader: React.FC = () => {
 				handleIncomingCall,
 			);
 		};
-	}, [activeChat, currentUser, socket]);
+	}, [activeChat, currentUser, socket, setCallerSignal]);
 
 	const handleMakeVideoCall = () => {
 		if (!chatUser || !activeChat || activeChat?.isGroupChat) return;
 		setCallLoading(true);
+
 		router.push(`/video-call/${chatUser?._id}`);
 	};
 

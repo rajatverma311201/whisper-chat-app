@@ -37,4 +37,20 @@ declare global {
 		active: boolean;
 	}
 	type Nullable<T> = T | null;
+
+	export interface MediaDevicesI {
+		audio: {
+			input: MediaDeviceI[];
+			output: MediaDeviceI[];
+		};
+		video: {
+			input: MediaDeviceI[];
+			output: MediaDeviceI[];
+		};
+	}
+
+	export interface MediaDeviceI {
+		deviceId: string;
+		label: string;
+	}
 }
