@@ -64,6 +64,12 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 	const [screenPresenting, setScreenPresenting] = useState(false);
 
 	const [mediaDevices, setMediaDevices] = useState<MediaDevicesI>();
+	const [audioInputDevice, setAudioInputDevice] =
+		useState<Nullable<string>>(null);
+	const [videoInputDevice, setVideoInputDevice] =
+		useState<Nullable<string>>(null);
+	const [audioOutputDevice, setAudioOutputDevice] =
+		useState<Nullable<string>>(null);
 
 	const {
 		isCallActive,
@@ -73,54 +79,8 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 		resetCallState,
 	} = useVideoCallStore();
 
-	console.log({ isCallActive });
-
-	const attachEventListenersToPeerConnectionRef = (
-		peerConnectionRef: MutableRefObject<RTCPeerConnection | null>,
-	) => {
-		if (!peerConnectionRef.current) {
-			return;
-		}
-		peerConnectionRef.current.addEventListener(
-			"icecandidateerror",
-			(event) => {
-				// console.log("ICE CANDIDATE ERROR = ", event);
-			},
-		);
-
-		peerConnectionRef.current.addEventListener(
-			"negotiationneeded",
-			(event) => {
-				// console.log("negotiation = ", event);
-			},
-		);
-		peerConnectionRef.current.addEventListener("datachannel", (event) => {
-			// console.log("datachannel = ", event);
-		});
-		peerConnectionRef.current.addEventListener(
-			"connectionstatechange",
-			(event) => {
-				// console.log("connectionstatechange = ", event);
-			},
-		);
-		peerConnectionRef.current.addEventListener(
-			"iceconnectionstatechange",
-			(event) => {
-				// console.log("iceconnectionstatechange = ", event);
-			},
-		);
-		peerConnectionRef.current.addEventListener(
-			"icegatheringstatechange",
-			(event) => {
-				// console.log("icegatheringstatechange = ", event);
-			},
-		);
-	};
-
 	const makeCall = useCallback(async () => {
-		console.log("MAKE CALL", peerConnectionRef);
 		if (!peerConnectionRef.current) return;
-		console.log("MAKE CALL");
 		const offer = await peerConnectionRef.current.createOffer();
 		await peerConnectionRef.current.setLocalDescription(offer);
 		socket.emit(SocketConst.PERSONAL_CHAT_MAKE_CALL, {
@@ -169,9 +129,6 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 				if (userVideoRef.current) {
 					userVideoRef.current.srcObject = stream;
 				}
-				if (partnerVideoRef.current) {
-					partnerVideoRef.current.srcObject = stream;
-				}
 
 				peerConnectionRef.current = new RTCPeerConnection({
 					iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
@@ -180,7 +137,6 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 				peerConnectionRef.current.addEventListener(
 					"icecandidate",
 					(event) => {
-						console.log("HELLO");
 						if (event.candidate) {
 							socket.emit(SocketConst.SEND_ICE_CANDIDATE, {
 								to: userId,
@@ -192,12 +148,14 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 
 				peerConnectionRef.current.addEventListener("track", (event) => {
 					if (partnerVideoRef.current) {
-						console.log("TRACK IS THERE");
+						console.log("eventStreams = ", {
+							eventSt: event.streams,
+						});
 						partnerVideoRef.current.srcObject = event.streams[0];
 					}
 				});
 
-				attachEventListenersToPeerConnectionRef(peerConnectionRef);
+				// attachEventListenersToPeerConnectionRef(peerConnectionRef);
 
 				stream
 					.getTracks()
@@ -225,7 +183,6 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 			SocketConst.PERSONAL_CHAT_ACCEPTED_INCOMING_CALL,
 			async (data) => {
 				if (peerConnectionRef.current) {
-					console.log("HELLO IN SOCKET EVENT");
 					await peerConnectionRef.current.setRemoteDescription(
 						new RTCSessionDescription(data.signal),
 					);
@@ -305,9 +262,19 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 	}, []);
 
 	const toggleCamera = () => {
+		if (!mediaStreamRef.current) {
+			return;
+		}
+		const videoTrack = mediaStreamRef.current.getVideoTracks()[0];
+		videoTrack.enabled = !videoTrack.enabled;
 		setCameraOn((cam) => !cam);
 	};
 	const toggleMic = () => {
+		if (!mediaStreamRef.current) {
+			return;
+		}
+		const audioTrack = mediaStreamRef.current?.getAudioTracks()[0];
+		audioTrack.enabled = !audioTrack.enabled;
 		setMicOn((mic) => !mic);
 	};
 
@@ -319,6 +286,71 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 		} catch (err) {
 			console.log(err);
 		}
+	};
+
+	const handleAudioInputChange = async (deviceId: string) => {
+		if (!mediaStreamRef.current) {
+			return;
+		}
+
+		const stream = await navigator.mediaDevices.getUserMedia({
+			audio: { deviceId: { exact: deviceId } },
+			video: false,
+		});
+
+		const oldAudioTrack = mediaStreamRef.current.getAudioTracks()[0];
+
+		mediaStreamRef.current.removeTrack(oldAudioTrack);
+		oldAudioTrack.stop();
+
+		const newAudioTrack = stream.getAudioTracks()[0];
+		mediaStreamRef.current.addTrack(newAudioTrack);
+		setAudioInputDevice(deviceId);
+	};
+
+	const handleVideoInputChange = async (deviceId: string) => {
+		if (!mediaStreamRef.current) {
+			return;
+		}
+		const stream = await navigator.mediaDevices.getUserMedia({
+			audio: false,
+			video: { deviceId: { exact: deviceId } },
+		});
+		const oldVideoTrack = mediaStreamRef.current.getVideoTracks()[0];
+
+		mediaStreamRef.current.removeTrack(oldVideoTrack);
+		oldVideoTrack.stop();
+
+		const newVideoTrack = stream.getVideoTracks()[0];
+		mediaStreamRef.current.addTrack(newVideoTrack);
+		setVideoInputDevice(deviceId);
+	};
+
+	const handleAudioOutputChange = (deviceId: string) => {
+		if (!userVideoRef.current || !partnerVideoRef.current) {
+			return;
+		}
+
+		const audioElement1 = userVideoRef.current; // Assuming you use this for local video
+
+		audioElement1
+			.setSinkId(deviceId)
+			.then(() => {
+				setAudioOutputDevice(deviceId);
+			})
+			.catch((err) => {
+				console.error("Error setting audio output device:", err);
+			});
+
+		const audioElement2 = partnerVideoRef.current;
+		audioElement2
+			.setSinkId(deviceId)
+			.then(() => {
+				setAudioOutputDevice(deviceId);
+			})
+			.catch((err) => {
+				console.error("Error setting audio output device:", err);
+			});
 	};
 
 	return (
@@ -337,7 +369,7 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 						className=""
 					/>
 				</div>
-				<div className={cn(isCallActive && "hidden")}>
+				<div className={cn(!isCallActive && "hidden")}>
 					<video
 						ref={partnerVideoRef}
 						autoPlay
@@ -362,9 +394,17 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 									)}
 								/>
 							</PopoverTrigger>
-							<PopoverContent>
-								<Select>
-									<SelectTrigger></SelectTrigger>
+							<PopoverContent className="flex flex-col gap-2">
+								<Select onValueChange={handleAudioInputChange}>
+									<SelectTrigger>
+										{
+											mediaDevices?.audio.input.find(
+												(item) =>
+													item.deviceId ==
+													audioInputDevice,
+											)?.label
+										}
+									</SelectTrigger>
 									<SelectContent>
 										{mediaDevices?.audio.input.map(
 											(item, idx) => (
@@ -379,7 +419,7 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 									</SelectContent>
 								</Select>
 								<hr />
-								<Select>
+								<Select onValueChange={handleAudioOutputChange}>
 									<SelectTrigger></SelectTrigger>
 									<SelectContent>
 										{mediaDevices?.audio.output.map(
@@ -424,7 +464,7 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 								/>
 							</PopoverTrigger>
 							<PopoverContent>
-								<Select>
+								<Select onValueChange={handleVideoInputChange}>
 									<SelectTrigger></SelectTrigger>
 									<SelectContent>
 										<>
@@ -482,3 +522,39 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 };
 
 export default VideoCallPage;
+
+const attachEventListenersToPeerConnectionRef = (
+	peerConnectionRef: MutableRefObject<RTCPeerConnection | null>,
+) => {
+	if (!peerConnectionRef.current) {
+		return;
+	}
+	peerConnectionRef.current.addEventListener("icecandidateerror", (event) => {
+		// console.log("ICE CANDIDATE ERROR = ", event);
+	});
+
+	peerConnectionRef.current.addEventListener("negotiationneeded", (event) => {
+		// console.log("negotiation = ", event);
+	});
+	peerConnectionRef.current.addEventListener("datachannel", (event) => {
+		// console.log("datachannel = ", event);
+	});
+	peerConnectionRef.current.addEventListener(
+		"connectionstatechange",
+		(event) => {
+			// console.log("connectionstatechange = ", event);
+		},
+	);
+	peerConnectionRef.current.addEventListener(
+		"iceconnectionstatechange",
+		(event) => {
+			// console.log("iceconnectionstatechange = ", event);
+		},
+	);
+	peerConnectionRef.current.addEventListener(
+		"icegatheringstatechange",
+		(event) => {
+			// console.log("icegatheringstatechange = ", event);
+		},
+	);
+};

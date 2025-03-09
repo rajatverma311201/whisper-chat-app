@@ -21,6 +21,7 @@ export const ChatHeader: React.FC = () => {
 	const router = useRouter();
 
 	const [incomingCall, setIncomingCall] = useState(false);
+	const [incomingCallRoomId, setIncomingCallRoomId] = useState();
 	const [isTyping, setIsTyping] = useState(false);
 	const [callLoading, setCallLoading] = useState(false);
 	const { setCallerSignal } = useVideoCallStore();
@@ -57,15 +58,22 @@ export const ChatHeader: React.FC = () => {
 
 	const handleMakeVideoCall = () => {
 		if (!chatUser || !activeChat || activeChat?.isGroupChat) return;
+
+		const roomId = [chatUser._id, currentUser?._id].sort().join("-");
+
 		setCallLoading(true);
 
-		router.push(`/video-call/${chatUser?._id}`);
+		router.push(
+			`/video-call/${roomId}?action=init&userId=${currentUser?._id}`,
+		);
 	};
 
 	const handleAcceptCall = () => {
 		if (!chatUser) return;
 		setCallLoading(true);
-		router.push(`/video-call/${chatUser?._id}?action=accept`);
+		router.push(
+			`/video-call/${incomingCallRoomId}?action=accept&userId=${currentUser?._id}`,
+		);
 	};
 
 	const handleRejectCall = () => {
