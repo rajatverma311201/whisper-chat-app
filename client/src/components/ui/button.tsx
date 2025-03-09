@@ -21,14 +21,14 @@ const buttonVariants = cva(
 				link: "text-primary underline-offset-4 hover:underline",
 				outlineDestructive:
 					"text-red-500 border-red-500 border hover:bg-red-500 hover:text-white",
-				videoControl:
-					"bg-zinc-600 text-gray-100 rounded-sm hover:bg-zinc-700/75",
+				videoControl: "bg-zinc-600 text-gray-100 hover:bg-zinc-700/75",
 			},
 			size: {
 				default: "h-9 px-4 py-2",
 				sm: "h-8 rounded-md px-3",
 				lg: "h-10 rounded-md px-8",
 				icon: "h-10 w-10",
+				iconLg: "h-12 w-12 hover:scale-125 hover:-translate-y-1 duration-300 hover:mx-2 transition-all",
 				iconRound: "h-10 w-10 rounded-full",
 				videoControl: "h-12 w-12",
 			},
