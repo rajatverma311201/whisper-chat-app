@@ -1,28 +1,29 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import {
-	DropdownMenu,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import { Select, SelectContent, SelectTrigger } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+} from "@/components/ui/select";
 import { useAuthUser } from "@/hooks/auth/use-auth-user";
 import { useSocket } from "@/hooks/global/use-socket";
 import { useVideoCallStore } from "@/hooks/global/use-video-call-store";
 import { SocketConst } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { clear, error } from "console";
 import {
 	ArrowBigUpIcon,
-	ChevronDown,
 	ChevronUp,
 	Mic,
+	MicOff,
 	Video,
+	VideoOff,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -34,18 +35,6 @@ import {
 } from "react";
 import { toast } from "sonner";
 
-// const iceServers = [
-// 	{ urls: "stun:stun.l.google.com:19302" },
-// 	{ urls: "stun:stun.l.google.com:5349" },
-// 	{ urls: "stun:stun1.l.google.com:3478" },
-// 	{ urls: "stun:stun1.l.google.com:5349" },
-// 	{ urls: "stun:stun2.l.google.com:19302" },
-// 	{ urls: "stun:stun2.l.google.com:5349" },
-// 	{ urls: "stun:stun3.l.google.com:3478" },
-// 	{ urls: "stun:stun3.l.google.com:5349" },
-// 	{ urls: "stun:stun4.l.google.com:19302" },
-// 	{ urls: "stun:stun4.l.google.com:5349" },
-// ];
 interface VideoCallPageProps {
 	params: { userId: string };
 	searchParams: Record<string, string>;
@@ -69,6 +58,10 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 
 	const [audioCtrlPopoverOpen, setAudioCtrlPopoverOpen] = useState(false);
 	const [videoCtrlPopoverOpen, setVideoCtrlPopoverOpen] = useState(false);
+
+	const [micOn, setMicOn] = useState(true);
+	const [cameraOn, setCameraOn] = useState(true);
+	const [screenPresenting, setScreenPresenting] = useState(false);
 
 	const [mediaDevices, setMediaDevices] = useState<MediaDevicesI>();
 
@@ -172,6 +165,7 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 					video: true,
 				});
 				mediaStreamRef.current = stream;
+
 				if (userVideoRef.current) {
 					userVideoRef.current.srcObject = stream;
 				}
@@ -310,6 +304,23 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 		fn();
 	}, []);
 
+	const toggleCamera = () => {
+		setCameraOn((cam) => !cam);
+	};
+	const toggleMic = () => {
+		setMicOn((mic) => !mic);
+	};
+
+	const handleScreenPresent = async () => {
+		try {
+			const displayMedia = await navigator.mediaDevices.getDisplayMedia();
+			console.log({ displayMedia });
+			setScreenPresenting(true);
+		} catch (err) {
+			console.log(err);
+		}
+	};
+
 	return (
 		<div className="h-full bg-zinc-900">
 			<h1 className="py-5 text-center text-xl text-white">Video Call</h1>
@@ -324,7 +335,6 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 						muted
 						playsInline
 						className=""
-						// style={{ width: "300px" }}
 					/>
 				</div>
 				<div className={cn(isCallActive && "hidden")}>
@@ -333,23 +343,12 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 						autoPlay
 						playsInline
 						className="rounded-lg"
-
-						// style={{ width: "300px" }}
 					/>
 				</div>
 			</div>
 
 			<div className="p-5">
 				<div className="mx-auto flex max-w-[500px] items-center justify-center gap-4 rounded-lg bg-zinc-800 p-4">
-					{/* <Mic /> */}
-					{/* <DropdownMenu>
-					<DropdownMenuTrigger asChild>
-					<Button size={"lg"}>
-					<Mic />
-					</Button>
-					</DropdownMenuTrigger>
-					</DropdownMenu> */}
-
 					<div className="flex rounded-md border-2 border-zinc-700">
 						<Popover
 							open={audioCtrlPopoverOpen}
@@ -364,13 +363,50 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 								/>
 							</PopoverTrigger>
 							<PopoverContent>
-								<h2>item1</h2>
-								<h2>item2</h2>
-								<h2>item3</h2>
+								<Select>
+									<SelectTrigger></SelectTrigger>
+									<SelectContent>
+										{mediaDevices?.audio.input.map(
+											(item, idx) => (
+												<SelectItem
+													key={idx}
+													value={item.deviceId}
+												>
+													{item.label}
+												</SelectItem>
+											),
+										)}
+									</SelectContent>
+								</Select>
+								<hr />
+								<Select>
+									<SelectTrigger></SelectTrigger>
+									<SelectContent>
+										{mediaDevices?.audio.output.map(
+											(item, idx) => (
+												<SelectItem
+													key={idx}
+													value={item.deviceId}
+												>
+													{item.label}
+												</SelectItem>
+											),
+										)}
+									</SelectContent>
+								</Select>
 							</PopoverContent>
 						</Popover>
-						<Button size={"videoControl"} variant={"videoControl"}>
-							<Mic />
+						<Button
+							size={"videoControl"}
+							variant={"videoControl"}
+							onClick={toggleMic}
+							className={cn(
+								micOn
+									? ""
+									: "bg-destructive hover:bg-destructive/75",
+							)}
+						>
+							{micOn ? <Mic /> : <MicOff />}
 						</Button>
 					</div>
 
@@ -390,17 +426,48 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 							<PopoverContent>
 								<Select>
 									<SelectTrigger></SelectTrigger>
-									<SelectContent></SelectContent>
+									<SelectContent>
+										<>
+											{mediaDevices?.video.input.map(
+												(item, idx) => (
+													<SelectItem
+														key={idx}
+														value={item.deviceId}
+													>
+														{item.label}
+													</SelectItem>
+												),
+											)}
+										</>
+									</SelectContent>
 								</Select>
 							</PopoverContent>
 						</Popover>
-						<Button size={"videoControl"} variant={"videoControl"}>
-							<Video />
+						<Button
+							size={"videoControl"}
+							variant={"videoControl"}
+							onClick={toggleCamera}
+							className={cn(
+								cameraOn
+									? ""
+									: "bg-destructive hover:bg-destructive/75",
+							)}
+						>
+							{cameraOn ? <Video /> : <VideoOff />}
 						</Button>
 					</div>
 
 					<div>
-						<Button size={"videoControl"} variant={"videoControl"}>
+						<Button
+							size={"videoControl"}
+							variant={"videoControl"}
+							onClick={handleScreenPresent}
+							className={cn(
+								screenPresenting
+									? "bg-primary hover:bg-primary/75"
+									: "",
+							)}
+						>
 							<ArrowBigUpIcon />
 						</Button>
 					</div>
