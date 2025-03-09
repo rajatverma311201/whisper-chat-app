@@ -2,7 +2,7 @@ import { useAuthUser } from "@/hooks/auth/use-auth-user";
 import { usePersonalChats } from "@/hooks/chats/use-personal-chats";
 import { useActiveChat } from "@/hooks/global/use-active-chat";
 import { getNameInitials } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GroupChatsList } from "./group-chats-list";
 import { useUnreadMessages } from "@/hooks/global/use-unread-messages";
 import { Badge } from "../ui/badge";
@@ -25,10 +25,16 @@ export const ChatsList: React.FC<ChatsListProps> = ({}) => {
 		<div>
 			<ul className="space-y-2 p-2">
 				{personalChats?.map((chat: any) => {
-					const [chatName, chatUserId] =
+					const chatUser =
 						currentUser?._id == chat.user1._id
-							? [chat.user2.name, chat.user2._id]
-							: [chat.user1.name, chat.user1._id];
+							? chat.user2
+							: chat.user1;
+
+					const {
+						name: chatName,
+						_id: chatUserId,
+						photo: chatUserPhoto,
+					} = chatUser;
 
 					const unreadMessagesCnt = getUnreadMessagesCount(chat._id);
 
@@ -47,6 +53,7 @@ export const ChatsList: React.FC<ChatsListProps> = ({}) => {
 								<AvatarFallback>
 									{getNameInitials(chatName)}
 								</AvatarFallback>
+								<AvatarImage src={chatUserPhoto} />
 							</Avatar>
 							<span className="text-black">
 								{chatName}
