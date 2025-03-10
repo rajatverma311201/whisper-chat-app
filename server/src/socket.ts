@@ -29,7 +29,6 @@ export const socketHandler = (appHttpServer: ExpressHttpServer) => {
 
 		socket.on("init", (userId: string) => {
 			socketsAndUsers.registerUser(socket.id, userId);
-			console.log("User initialized", userId);
 		});
 
 		socket.on("disconnect", () => {
@@ -87,64 +86,51 @@ export const socketHandler = (appHttpServer: ExpressHttpServer) => {
 			}
 		});
 
+		socket.on("join-room", ({ room }, cb) => {
+			console.log("Joining room", room);
+			socket.join(room);
+			socket.to(room).emit("user-connected", socket.id);
+			cb({ success: true });
+		});
+
+		socket.on("leave-room", ({ room }) => {
+			console.log("Leaving room", room);
+			socket.leave(room);
+		});
+
 		socket.on(SocketConst.PERSONAL_CHAT_MAKE_CALL, (data) => {
-			const { makeCallTo, callerSignal, caller } = data;
-			const receiverSocketId = socketsAndUsers.getSocketId(makeCallTo);
-			if (receiverSocketId) {
-				const roomId = generateShortRoomId(caller, makeCallTo);
-				io.to(receiverSocketId).emit(
-					SocketConst.PERSONAL_CHAT_INCOMING_CALL,
-					{
-						caller,
-						callerSignal,
-						roomId,
-					},
-				);
-			}
-		});
-
-		socket.on(SocketConst.PERSONAL_CHAT_ACCEPT_INCOMING_CALL, (data) => {
-			const { targetUserId, signal } = data;
-			const targetSocketId = socketsAndUsers.getSocketId(targetUserId);
-			if (targetSocketId) {
-				io.to(targetSocketId).emit(
-					SocketConst.PERSONAL_CHAT_ACCEPTED_INCOMING_CALL,
-					{ signal },
-				);
-			}
-		});
-
-		socket.on(SocketConst.PERSONAL_CHAT_REJECT_INCOMING_CALL, (data) => {
-			const { userId } = data;
-			const receiverSocketId = socketsAndUsers.getSocketId(userId);
-			if (receiverSocketId) {
-				io.to(receiverSocketId).emit(
-					SocketConst.PERSONAL_CHAT_REJECTED_INCOMING_CALL,
-				);
-			}
-		});
-
-		socket.on(SocketConst.PERSONAL_CHAT_END_CALL, (data) => {
-			const { userId } = data;
-			const receiverSocketId = socketsAndUsers.getSocketId(userId);
-			if (receiverSocketId) {
-				io.to(receiverSocketId).emit(
-					SocketConst.PERSONAL_CHAT_END_CALL,
-				);
-			}
-		});
-
-		socket.on(SocketConst.SEND_ICE_CANDIDATE, (data) => {
-			const { to, candidate } = data;
+			const { to, room } = data;
 			const receiverSocketId = socketsAndUsers.getSocketId(to);
-			if (receiverSocketId) {
-				io.to(receiverSocketId).emit(
-					SocketConst.RECEIVE_ICE_CANDIDATE,
-					{
-						candidate,
-					},
-				);
+
+			if (!receiverSocketId) {
+				return;
 			}
+
+			io.to(receiverSocketId).emit(
+				SocketConst.PERSONAL_CHAT_INCOMING_CALL,
+				{
+					room,
+				},
+			);
+		});
+
+		socket.on("offer", (data) => {
+			const { room, sdp } = data;
+			socket.to(room).emit("offer", { sdp });
+		});
+		socket.on("answer", (data) => {
+			const { room, sdp } = data;
+			socket.to(room).emit("answer", { sdp });
+		});
+
+		socket.on("icecandidate", (data) => {
+			const { room, candidate } = data;
+			console.log("Sending ICE candidate", candidate);
+			socket.to(room).emit("icecandidate", { candidate });
+		});
+		socket.on("end-call", (data) => {
+			const { room } = data;
+			socket.to(room).emit("end-call");
 		});
 	});
 };
