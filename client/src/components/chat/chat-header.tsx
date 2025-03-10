@@ -38,7 +38,9 @@ export const ChatHeader: React.FC = () => {
 			if (data.chatId === activeChat.chat._id) setIsTyping(false);
 		};
 		const handleIncomingCall = (data: any) => {
-			setCallerSignal(data.callerSignal);
+			const { room } = data;
+			// setCallerSignal(data.callerSignal);
+			setIncomingCallRoomId(room);
 			setIncomingCall(true);
 		};
 
@@ -64,7 +66,7 @@ export const ChatHeader: React.FC = () => {
 		setCallLoading(true);
 
 		router.push(
-			`/video-call/${roomId}?action=init&userId=${currentUser?._id}`,
+			`/video-call/${roomId}?action=init&receiverUserId=${chatUser?._id}`,
 		);
 	};
 
@@ -72,7 +74,7 @@ export const ChatHeader: React.FC = () => {
 		if (!chatUser) return;
 		setCallLoading(true);
 		router.push(
-			`/video-call/${incomingCallRoomId}?action=accept&userId=${currentUser?._id}`,
+			`/video-call/${incomingCallRoomId}?action=accept&receiverUserId=${chatUser?._id}`,
 		);
 	};
 
