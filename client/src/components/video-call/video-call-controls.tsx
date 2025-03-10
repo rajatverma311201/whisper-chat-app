@@ -198,7 +198,7 @@ export const VideoCallControls: React.FC<VideoCallControlsProps> = ({
 	};
 	return (
 		<>
-			<div className="bg-green fixed bottom-10 left-0 right-0 flex justify-center p-4">
+			<div className="bg-green fixed bottom-4 left-0 right-0 flex justify-center p-4">
 				<div className="flex items-center gap-4 rounded-2xl bg-zinc-800 px-5 py-4 shadow-lg">
 					<Button
 						variant={isMuted ? "destructive" : "videoControl"}

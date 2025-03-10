@@ -175,40 +175,73 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 		};
 	}, [socket, room, cleanupFn, router]);
 
-	return (
-		<div className="h-full bg-zinc-900">
-			<h1 className="py-5 text-center text-xl text-white">Video Call</h1>
-			<div className="flex flex-wrap items-center justify-center gap-5">
-				<div className="relative overflow-hidden rounded-lg">
-					<span className="absolute bottom-2 left-2 rounded-lg bg-gray-800/50 px-4 py-2 text-white">
-						{currentUser?.name} (YOU)
-					</span>
-					<video
-						ref={userVideoRef}
-						autoPlay
-						muted
-						playsInline
-						className=""
-					/>
-				</div>
-				<div
-				// className={cn(!isCallActive && "hidden")}
-				>
-					<video
-						ref={partnerVideoRef}
-						autoPlay
-						playsInline
-						className="rounded-lg"
-					/>
-				</div>
-			</div>
+	// return (
+	// 	<div className="h-screen bg-zinc-900">
+	// 		<h1 className="py-5 text-center text-xl text-white">Video Call</h1>
+	// 		<div className="flex h-full flex-wrap items-center justify-center gap-5">
+	// 			<div className="relative overflow-hidden rounded-lg">
+	// 				<span className="absolute bottom-2 left-2 rounded-lg bg-gray-800/50 px-4 py-2 text-white">
+	// 					{currentUser?.name} (YOU)
+	// 				</span>
+	// 				<video
+	// 					ref={userVideoRef}
+	// 					autoPlay
+	// 					muted
+	// 					playsInline
+	// 					className="h-auto w-auto"
+	// 				/>
+	// 			</div>
+	// 			<div>
+	// 				<video
+	// 					ref={partnerVideoRef}
+	// 					autoPlay
+	// 					playsInline
+	// 					className="h-auto w-auto rounded-lg"
+	// 				/>
+	// 			</div>
+	// 		</div>
 
-			<VideoCallControls
-				room={room}
-				mediaStreamRef={mediaStreamRef}
-				peerConnectionRef={peerConnectionRef}
-			/>
-		</div>
+	// 		<VideoCallControls
+	// 			room={room}
+	// 			mediaStreamRef={mediaStreamRef}
+	// 			peerConnectionRef={peerConnectionRef}
+	// 		/>
+	// 	</div>
+	// );
+
+	return (
+		<>
+			<div className="flex h-screen flex-col overflow-scroll bg-zinc-900 text-white">
+				<h1 className="py-5 text-center text-xl">Video Call</h1>
+				<div className="flex flex-1 flex-col items-center justify-center gap-5 p-5 lg:flex-row">
+					<div className="relative aspect-video w-full max-w-3xl overflow-hidden rounded-lg border border-gray-700 sm:w-2/3">
+						<span className="absolute bottom-2 left-2 rounded-lg bg-gray-800/50 px-4 py-2 text-sm text-white">
+							{currentUser?.name} (YOU)
+						</span>
+						<video
+							ref={userVideoRef}
+							autoPlay
+							muted
+							playsInline
+							className="h-full w-full rounded-lg object-cover"
+						/>
+					</div>
+					<div className="relative aspect-video w-full max-w-3xl overflow-hidden rounded-lg border border-gray-700 sm:w-2/3">
+						<video
+							ref={partnerVideoRef}
+							autoPlay
+							playsInline
+							className="h-full w-full rounded-lg object-cover"
+						/>
+					</div>
+				</div>
+				<VideoCallControls
+					room={room}
+					mediaStreamRef={mediaStreamRef}
+					peerConnectionRef={peerConnectionRef}
+				/>
+			</div>
+		</>
 	);
 };
 
