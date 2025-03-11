@@ -36,11 +36,13 @@ interface VideoCallControlsProps {
 	room: string;
 	mediaStreamRef: MutableRefObject<Nullable<MediaStream>>;
 	peerConnectionRef: MutableRefObject<Nullable<RTCPeerConnection>>;
+	onScreenShare: Function;
 }
 export const VideoCallControls: React.FC<VideoCallControlsProps> = ({
 	room,
 	mediaStreamRef,
 	peerConnectionRef,
+	onScreenShare,
 }) => {
 	const [isMuted, setIsMuted] = useState(false);
 	const [isVideoOn, setIsVideoOn] = useState(true);
@@ -143,6 +145,17 @@ export const VideoCallControls: React.FC<VideoCallControlsProps> = ({
 	// };
 
 	const handleScreenPresent = async () => {
+		if (!mediaStreamRef.current || !peerConnectionRef.current) {
+			return;
+		}
+		try {
+			const displayMedia = await navigator.mediaDevices.getDisplayMedia();
+			const tracks = displayMedia.getTracks();
+		} catch (err) {
+			console.log("Error =", { err });
+		}
+
+		/*
 		if (screenPresenting) {
 			// Stop sharing screen
 			const videoTrack = mediaStreamRef.current?.getVideoTracks()[0];
@@ -191,6 +204,7 @@ export const VideoCallControls: React.FC<VideoCallControlsProps> = ({
 				console.error("Error starting screen share:", err);
 			}
 		}
+			*/
 	};
 	const handleEndCall = () => {
 		socket.emit("end-call", { room });
@@ -259,7 +273,7 @@ export const VideoCallControls: React.FC<VideoCallControlsProps> = ({
 							</Button>
 						</DialogTrigger>
 
-						<DialogContent className="sm:max-w-[425px]">
+						<DialogContent className="sm:max-w-[500px]">
 							<DialogHeader>
 								<DialogTitle>Call Settings</DialogTitle>
 							</DialogHeader>
@@ -286,7 +300,7 @@ export const VideoCallControls: React.FC<VideoCallControlsProps> = ({
 						</DialogContent>
 					</Dialog>
 
-					<DropdownMenu>
+					{/* <DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button
 								variant="videoControl"
@@ -303,12 +317,9 @@ export const VideoCallControls: React.FC<VideoCallControlsProps> = ({
 								<Users className="mr-2 h-4 w-4" />
 								<span>Show participants</span>
 							</DropdownMenuItem>
-							<DropdownMenuItem>
-								<MonitorSmartphone className="mr-2 h-4 w-4" />
-								<span>Present screen</span>
-							</DropdownMenuItem>
+							
 						</DropdownMenuContent>
-					</DropdownMenu>
+					</DropdownMenu> */}
 
 					<Button
 						variant="destructive"
