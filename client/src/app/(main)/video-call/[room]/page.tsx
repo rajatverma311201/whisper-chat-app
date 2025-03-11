@@ -7,7 +7,13 @@ import { useVideoCallStore } from "@/hooks/global/use-video-call-store";
 import { SocketConst } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { MutableRefObject, useCallback, useEffect, useRef } from "react";
+import {
+	MutableRefObject,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 
 const iceServers = [
 	{ urls: "stun:stun.l.google.com:19302" },
@@ -42,17 +48,22 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 	const partnerVideoRef = useRef<HTMLVideoElement | null>(null);
 	const mediaStreamRef = useRef<MediaStream | null>(null);
 	const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+	const [screenSharingTrack, setScreenSharingTrack] =
+		useState<MediaStreamTrack | null>(null);
+
+	const [selectedAudioInput, setSelectedAudioInput] = useState<string>("");
+	const [selectedVideoInput, setSelectedVideoInput] = useState<string>("");
+	const [selectedAudioOutput, setSelectedAudioOutput] = useState<string>("");
 
 	// const { isCallActive, setCallActive } = useVideoCallStore();
 
 	const cleanupFn = useCallback(() => {
 		mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
 		peerConnectionRef.current?.close();
-		socket.emit("leave-room", { room });
-	}, [socket, room]);
+		// socket.emit("leave-room", { room });
+	}, []);
 
 	useEffect(() => {
-		console.log("hello");
 		socket
 			.emitWithAck("join-room", {
 				room,
@@ -64,76 +75,80 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 						room,
 					});
 				}
-			})
-			.catch(console.log);
+			});
 
-		return () => cleanupFn();
+		return () => {
+			socket.emit("leave-room", { room });
+			cleanupFn();
+		};
 	}, [cleanupFn, socket, room, receiverUserId]);
 
 	useEffect(() => {
+		if (!selectedAudioInput || !selectedVideoInput) {
+			return;
+		}
 		const fn = async () => {
-			const stream = await navigator.mediaDevices.getUserMedia({
-				audio: true,
-				video: true,
-			});
-			mediaStreamRef.current = stream;
-
-			if (userVideoRef.current) {
-				userVideoRef.current.srcObject = stream;
-			}
-
-			peerConnectionRef.current = new RTCPeerConnection({
-				iceServers,
-			});
-
-			stream.getTracks().forEach((track) => {
-				console.log({ track });
-				peerConnectionRef.current?.addTrack(track, stream);
-			});
-
-			console.log({ peerConnectionRef });
-			peerConnectionRef.current.addEventListener(
-				"icecandidate",
-				(event) => {
-					console.log({ event });
-					if (event.candidate) {
-						socket.emit("icecandidate", {
-							room,
-							candidate: event.candidate,
-						});
-					}
-				},
-			);
-
-			peerConnectionRef.current.addEventListener("track", (event) => {
-				console.log("eventStreams = ", {
-					eventSt: event,
+			try {
+				const stream = await navigator.mediaDevices.getUserMedia({
+					audio:
+						selectedAudioInput == "default"
+							? true
+							: { deviceId: { exact: selectedAudioInput } },
+					video:
+						selectedVideoInput == "default"
+							? true
+							: { deviceId: { exact: selectedVideoInput } },
 				});
-				if (partnerVideoRef.current) {
-					console.log("eventStreams = ", {
-						eventSt: event.streams,
-					});
-					partnerVideoRef.current.srcObject = event.streams[0];
+				mediaStreamRef.current = stream;
+
+				if (userVideoRef.current) {
+					userVideoRef.current.srcObject = stream;
 				}
-			});
 
-			const localSDP = await peerConnectionRef.current?.createOffer();
-			await peerConnectionRef.current?.setLocalDescription(localSDP);
-			console.log({ localSDP });
+				peerConnectionRef.current = new RTCPeerConnection({
+					iceServers,
+				});
 
-			socket.emit("offer", {
-				room,
-				sdp: localSDP,
-			});
+				stream.getTracks().forEach((track) => {
+					peerConnectionRef.current?.addTrack(track, stream);
+				});
+
+				peerConnectionRef.current.addEventListener(
+					"icecandidate",
+					(event) => {
+						if (event.candidate) {
+							socket.emit("icecandidate", {
+								room,
+								candidate: event.candidate,
+							});
+						}
+					},
+				);
+
+				peerConnectionRef.current.addEventListener("track", (event) => {
+					if (partnerVideoRef.current) {
+						partnerVideoRef.current.srcObject = event.streams[0];
+					}
+				});
+
+				const localSDP = await peerConnectionRef.current?.createOffer();
+				await peerConnectionRef.current?.setLocalDescription(localSDP);
+
+				socket.emit("offer", {
+					room,
+					sdp: localSDP,
+				});
+			} catch (error) {
+				console.log({ error });
+			}
 		};
 		fn();
 
 		return () => cleanupFn();
-	}, [cleanupFn, room, socket]);
+	}, [cleanupFn, room, socket, selectedAudioInput, selectedVideoInput]);
 
 	useEffect(() => {
 		const handleOffer = async (data: any) => {
-			console.log("data from offer", { data });
 			await peerConnectionRef.current?.setRemoteDescription(
 				new RTCSessionDescription(data.sdp),
 			);
@@ -145,7 +160,6 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 		};
 
 		const handleAnswer = async ({ sdp }: any) => {
-			console.log("GOT ANSWER", { sdp });
 			await peerConnectionRef.current?.setRemoteDescription(
 				new RTCSessionDescription(sdp),
 			);
@@ -168,12 +182,22 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 		socket.on("end-call", handleEndCall);
 
 		return () => {
-			socket.off("offer", handleOffer);
-			socket.off("answer", handleAnswer);
-			socket.off("icecandidate", handleIceCandidate);
+			// socket.off("offer");
+			// socket.off("answer");
+			// socket.off("icecandidate");
+			// socket.off("end-call");
+
+			["offer", "answer", "icecandidate", "end-call"].forEach((event) => {
+				socket.off(event);
+			});
+
 			cleanupFn();
 		};
 	}, [socket, room, cleanupFn, router]);
+
+	const handleScreenShare = (track: MediaStreamTrack) => {
+		setScreenSharingTrack(track);
+	};
 
 	// return (
 	// 	<div className="h-screen bg-zinc-900">
@@ -215,7 +239,7 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 				<h1 className="py-5 text-center text-xl">Video Call</h1>
 				<div className="flex flex-1 flex-col items-center justify-center gap-5 p-5 lg:flex-row">
 					<div className="relative aspect-video w-full max-w-3xl overflow-hidden rounded-lg border border-gray-700 sm:w-2/3">
-						<span className="absolute bottom-2 left-2 rounded-lg bg-gray-800/50 px-4 py-2 text-sm text-white">
+						<span className="absolute bottom-2 left-2 rounded-lg border bg-gray-800/50 px-4 py-2 text-sm text-white">
 							{currentUser?.name} (YOU)
 						</span>
 						<video
@@ -239,6 +263,15 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 					room={room}
 					mediaStreamRef={mediaStreamRef}
 					peerConnectionRef={peerConnectionRef}
+					onScreenShare={setScreenSharingTrack}
+					selectedAudioInput={selectedAudioInput}
+					selectedAudioOutput={selectedAudioOutput}
+					selectedVideoInput={selectedVideoInput}
+					setSelectedAudioInput={setSelectedAudioInput}
+					setSelectedAudioOutput={setSelectedAudioOutput}
+					setSelectedVideoInput={setSelectedVideoInput}
+					userVideoRef={userVideoRef}
+					partnerVideoRef={partnerVideoRef}
 				/>
 			</div>
 		</>
@@ -255,31 +288,25 @@ const attachEventListenersToPeerConnectionRef = (
 		return;
 	}
 	peerConnectionRef.current.addEventListener("icecandidateerror", (event) => {
-		console.log("ICE CANDIDATE ERROR = ", event);
 	});
 
 	peerConnectionRef.current.addEventListener("negotiationneeded", (event) => {
-		console.log("negotiation = ", event);
 	});
 	peerConnectionRef.current.addEventListener("datachannel", (event) => {
-		console.log("datachannel = ", event);
 	});
 	peerConnectionRef.current.addEventListener(
 		"connectionstatechange",
 		(event) => {
-			console.log("connectionstatechange = ", event);
 		},
 	);
 	peerConnectionRef.current.addEventListener(
 		"iceconnectionstatechange",
 		(event) => {
-			console.log("iceconnectionstatechange = ", event);
 		},
 	);
 	peerConnectionRef.current.addEventListener(
 		"icegatheringstatechange",
 		(event) => {
-			console.log("icegatheringstatechange = ", event);
 		},
 	);
 };

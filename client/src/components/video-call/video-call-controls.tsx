@@ -36,12 +36,32 @@ interface VideoCallControlsProps {
 	room: string;
 	mediaStreamRef: MutableRefObject<Nullable<MediaStream>>;
 	peerConnectionRef: MutableRefObject<Nullable<RTCPeerConnection>>;
+
+	selectedAudioInput: string;
+	selectedAudioOutput: string;
+	selectedVideoInput: string;
+
+	setSelectedAudioInput: Function;
+	setSelectedAudioOutput: Function;
+	setSelectedVideoInput: Function;
+
 	onScreenShare: Function;
+
+	userVideoRef: MutableRefObject<Nullable<HTMLVideoElement>>;
+	partnerVideoRef: MutableRefObject<Nullable<HTMLVideoElement>>;
 }
 export const VideoCallControls: React.FC<VideoCallControlsProps> = ({
 	room,
 	mediaStreamRef,
 	peerConnectionRef,
+	selectedAudioInput,
+	selectedAudioOutput,
+	selectedVideoInput,
+	setSelectedAudioInput,
+	setSelectedAudioOutput,
+	setSelectedVideoInput,
+	userVideoRef,
+	partnerVideoRef,
 	onScreenShare,
 }) => {
 	const [isMuted, setIsMuted] = useState(false);
@@ -51,9 +71,7 @@ export const VideoCallControls: React.FC<VideoCallControlsProps> = ({
 	const [audioOutputDevices, setAudioOutputDevices] = useState<
 		MediaDeviceInfo[]
 	>([]);
-	const [selectedAudioInput, setSelectedAudioInput] = useState<string>("");
-	const [selectedVideoInput, setSelectedVideoInput] = useState<string>("");
-	const [selectedAudioOutput, setSelectedAudioOutput] = useState<string>("");
+
 	const [screenPresenting, setScreenPresenting] = useState(false);
 	const { socket } = useSocket();
 	const router = useRouter();
@@ -99,7 +117,7 @@ export const VideoCallControls: React.FC<VideoCallControlsProps> = ({
 				getDevices,
 			);
 		};
-	}, []);
+	}, [setSelectedAudioInput, setSelectedAudioOutput, setSelectedVideoInput]);
 
 	const toggleMute = () => {
 		if (!mediaStreamRef.current) {
@@ -120,29 +138,20 @@ export const VideoCallControls: React.FC<VideoCallControlsProps> = ({
 		setIsVideoOn((v) => !v);
 	};
 
-	const handleAudioInputChange = (deviceId: string) => {
+	const handleAudioInputChange = async (deviceId: string) => {
 		setSelectedAudioInput(deviceId);
-		// Here you would switch the audio input device
 	};
 
 	const handleVideoInputChange = (deviceId: string) => {
 		setSelectedVideoInput(deviceId);
-		// Here you would switch the video input device
 	};
 
 	const handleAudioOutputChange = (deviceId: string) => {
 		setSelectedAudioOutput(deviceId);
-		// Here you would switch the audio output device
+
+		userVideoRef.current?.setSinkId(deviceId);
+		partnerVideoRef.current?.setSinkId(deviceId);
 	};
-	// const handleScreenPresent = async () => {
-	// 	try {
-	// 		const displayMedia = await navigator.mediaDevices.getDisplayMedia();
-	// 		console.log({ displayMedia });
-	// 		setScreenPresenting(true);
-	// 	} catch (err) {
-	// 		console.log(err);
-	// 	}
-	// };
 
 	const handleScreenPresent = async () => {
 		if (!mediaStreamRef.current || !peerConnectionRef.current) {

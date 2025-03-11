@@ -29,3 +29,14 @@ export const getPersonalChatUser = (
 	const users = [activeChat.chat.user1, activeChat.chat.user2];
 	return users.find((user) => user._id !== currentUser._id);
 };
+
+export const checkScreenSharingTrack = (track: MediaStreamTrack) => {
+	const label = track.label.toLowerCase();
+	const arr = ["screen", "display", "window", "tab"];
+	for (const val of arr) {
+		if (label.includes(val)) {
+			return true;
+		}
+	}
+	return false;
+};
