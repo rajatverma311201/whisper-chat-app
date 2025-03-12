@@ -2,7 +2,7 @@ import { create } from "zustand";
 import io, { Socket } from "socket.io-client";
 
 // Initialize socket outside the store
-const socket = io("http://localhost:9999", { autoConnect: false });
+const socket = io(process.env.NEXT_PUBLIC_API_URL, { autoConnect: false });
 
 interface SocketState {
 	socket: Socket;

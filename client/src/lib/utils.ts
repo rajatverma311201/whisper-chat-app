@@ -24,8 +24,6 @@ export const getPersonalChatUser = (
 		return null;
 	}
 
-	console.log({ activeChat });
-
 	const users = [activeChat.chat.user1, activeChat.chat.user2];
 	return users.find((user) => user._id !== currentUser._id);
 };

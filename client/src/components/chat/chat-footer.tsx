@@ -70,6 +70,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({}) => {
 			receiverId: chatUser._id,
 			senderId: currentUser?._id,
 		});
+		setMessage("");
 	};
 
 	useEffect(() => {

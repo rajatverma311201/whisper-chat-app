@@ -84,18 +84,19 @@ const VideoCallPage: React.FC<VideoCallPageProps> = ({
 	}, [cleanupFn, socket, room, receiverUserId]);
 
 	useEffect(() => {
-		if (!selectedAudioInput || !selectedVideoInput) {
-			return;
-		}
+		// if (!selectedAudioInput || !selectedVideoInput) {
+		// 	console.log({ selectedAudioInput, selectedVideoInput });
+		// 	return;
+		// }
 		const fn = async () => {
 			try {
 				const stream = await navigator.mediaDevices.getUserMedia({
 					audio:
-						selectedAudioInput == "default"
+						selectedAudioInput == "default" || !selectedAudioInput
 							? true
 							: { deviceId: { exact: selectedAudioInput } },
 					video:
-						selectedVideoInput == "default"
+						selectedVideoInput == "default" || !selectedVideoInput
 							? true
 							: { deviceId: { exact: selectedVideoInput } },
 				});
