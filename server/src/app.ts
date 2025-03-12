@@ -13,7 +13,7 @@ import { personalMessageRouter } from "@/routes/personal-message-routes";
 import { globalErrorHandler } from "@/utils/global-error-handler";
 
 if (process.env.NODE_ENV === "production") {
-    console.log = function (...params: any) {};
+	console.log = function (...params: any) {};
 }
 
 const app: Express = express();
@@ -26,7 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
 app.get("/", (req: Request, res: Response) => {
-    res.send("Express + TypeScript Server");
+	res.send("Express + TypeScript Server");
 });
 
 app.use("/api/auth", authRouter);

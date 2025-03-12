@@ -19,8 +19,8 @@ export const socketHandler = (appHttpServer: ExpressHttpServer) => {
 	const socketsAndUsers = new SocketsAndUsers();
 	const io = new SocketServer(appHttpServer, {
 		cors: {
-			origin: "http://localhost:3000",
-			methods: ["GET", "POST"],
+			origin: process.env.CLIENT_URL,
+			allowedHeaders: "*",
 		},
 	});
 
