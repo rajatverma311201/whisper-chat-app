@@ -5,10 +5,7 @@ import { useSocket } from "@/hooks/global/use-socket";
 import { useSendMessage } from "@/hooks/messages/use-send-message";
 import useSpeechRecognition from "@/hooks/util/use-speech-recognition";
 import { SocketConst } from "@/lib/constants";
-import {
-	getGroupChatMessagesKey,
-	getPersonalChatMessagesKey,
-} from "@/lib/keys";
+
 import { useQueryClient } from "@tanstack/react-query";
 import { Mic, MicOff, Plus, Smile } from "lucide-react";
 import { FormEvent, useEffect, useRef, useState } from "react";
